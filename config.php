@@ -18,7 +18,7 @@ $db_user    = "root"; # Database Username
 $db_pass    = ""; # Database Password
 $db_name    = "phpnuxbill"; # Database Name
 
-
+$config['site_url'] = 'https://hotspot.afyaquik.com/';
 
 
 //error reporting
