@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: always
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@afyaquik.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/acme.json:/acme.json
+
+  db:
+    image: mariadb:10.5
+    container_name: nuxbill_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: myrootpassword
+      MYSQL_DATABASE: nuxbill
+      MYSQL_USER: nuxbill
+      MYSQL_PASSWORD: myrootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+
+  phpnuxbill:
+    image: ./
+    container_name: nuxbill_app
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_NAME: nuxbill
+      DB_USER: phpnux
+      DB_PASS: strongpassword
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phpnuxbill.rule=Host(`hotspot.afyaquik.com`)"
+      - "traefik.http.routers.phpnuxbill.entrypoints=websecure"
+      - "traefik.http.routers.phpnuxbill.tls.certresolver=letsencrypt"
+      - "traefik.http.services.phpnuxbill.loadbalancer.server.port=80"
+
+volumes:
+  db_data:
