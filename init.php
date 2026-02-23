@@ -144,9 +144,9 @@ if ((!empty($radius_user) && $config['radius_enable']) || _post('radius_enable')
         // compability for old version
         $radius_pass = $radius_password;
     }
-    ORM::configure("mysql:host=$radius_host;dbname=$radius_name", null, 'radius');
-    ORM::configure('username', $radius_user, 'radius');
-    ORM::configure('password', $radius_pass, 'radius');
+    ORM::configure("mysql:host=$radius_host;dbname=$radius_name", null, 'nuxbill');
+    ORM::configure('username', $radius_user, 'nuxbill');
+    ORM::configure('password', $radius_pass, 'myrootpassword');
     ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'), 'radius');
     ORM::configure('return_result_sets', true, 'radius');
 }
