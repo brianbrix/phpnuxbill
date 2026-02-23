@@ -39,6 +39,7 @@ system/lan/**
 !system/lan/turkish.json
 !system/lan/english.json
 !system/lan/country.json
+!system/lan/swahili.json
 *.zip
 system/devices/**
 !system/devices/readme.md
