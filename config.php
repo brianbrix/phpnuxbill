@@ -30,6 +30,13 @@ $db_user    = "nuxbill"; # Database Username
 $db_pass    = "myrootpassword"; # Database Password
 $db_name    = "nuxbill"; # Database Name
 
+// Radius Database (used when RADIUS features are enabled)
+// Adjust these if your RADIUS DB runs on a different host/user/db
+$radius_host = "db";
+$radius_user = "root";
+$radius_pass = "myrootpassword";
+$radius_name = "radius";
+
 $config['site_url'] = 'https://hotspot.afyaquik.com/';
 
 
