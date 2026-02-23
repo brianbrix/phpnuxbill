@@ -1,13 +1,25 @@
 <?php
 
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || 
-             (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? "https://" : "http://";
+// Prefer X-Forwarded-Proto when behind a reverse proxy (e.g. Traefik, nginx) to avoid mixed content over HTTPS
+$protocol = 'http://';
+if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
+    $protocol = 'https://';
+} elseif (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ||
+          (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) {
+    $protocol = 'https://';
+}
 
 // Check if HTTP_HOST is set, otherwise use a default value or SERVER_NAME
 $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost');
 
 $baseDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
-define('APP_URL', $protocol . $host . $baseDir);
+$appUrl = $protocol . $host . $baseDir;
+
+// Allow BASE_URL env (e.g. from Docker) to override the full app URL for correct HTTPS asset links
+if (getenv('BASE_URL') !== false) {
+    $appUrl = rtrim(getenv('BASE_URL'), '/') . $baseDir;
+}
+define('APP_URL', $appUrl);
 
 
 $_app_stage = 'Live'; # Do not change this
