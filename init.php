@@ -137,7 +137,8 @@ if (empty($http_proxy) && !empty($config['http_proxy'])) {
         $http_proxyauth = $config['http_proxyauth'];
     }
 }
-date_default_timezone_set($config['timezone']);
+$timezone = !empty($config['timezone']) ? $config['timezone'] : (getenv('APP_TIMEZONE') ?: 'Africa/Nairobi');
+date_default_timezone_set($timezone);
 
 if ((!empty($radius_user) && $config['radius_enable']) || _post('radius_enable')) {
     if (!empty($radius_password)) {

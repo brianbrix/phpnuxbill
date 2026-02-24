@@ -39,6 +39,11 @@ $radius_name = "radius";
 
 $config['site_url'] = 'https://hotspot.afyaquik.com/';
 
+// Default application timezone (can still be overridden from settings)
+// Set this to your primary timezone, e.g. 'Africa/Nairobi'
+if (empty($config['timezone'])) {
+    $config['timezone'] = getenv('APP_TIMEZONE') ?: 'Africa/Nairobi';
+}
 
 //error reporting
 if($_app_stage!='Live'){
