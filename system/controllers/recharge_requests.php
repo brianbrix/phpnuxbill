@@ -90,6 +90,18 @@ switch ($action) {
 
             // Send invoice notification to customer
             Message::sendInvoice($customer, $in ?: null);
+
+            // Send inbox message to customer
+            Message::addToInbox(
+                $customer['id'],
+                Lang::T('Recharge Request Approved'),
+                Lang::T('Your recharge request for plan') . ' <strong>' . $plan['name_plan'] . '</strong> ' .
+                Lang::T('has been approved and activated.') . '<br>' .
+                Lang::T('Price') . ': ' . Lang::moneyFormat($plan['price']) . '<br>' .
+                ($in ? Lang::T('Invoice') . ': ' . $in['invoice'] : ''),
+                $admin['fullname']
+            );
+
             Message::sendTelegram(
                 "#u" . $customer['username'] . " (#id" . $customer['id'] . ") #recharge #approved\n" .
                 "Plan: " . $plan['name_plan'] . "\n" .
@@ -123,10 +135,23 @@ switch ($action) {
         
         // Send notification to customer
         $customer = ORM::for_table('tbl_customers')->find_one($request['customer_id']);
+        $plan = ORM::for_table('tbl_plans')->find_one($request['plan_id']);
+        $plan_name = $plan ? $plan['name_plan'] : '#' . $request['plan_id'];
+
+        // Send inbox message to customer
+        Message::addToInbox(
+            $customer['id'],
+            Lang::T('Recharge Request Rejected'),
+            Lang::T('Your recharge request for plan') . ' <strong>' . $plan_name . '</strong> ' .
+            Lang::T('has been rejected.') .
+            (!empty($reason) ? '<br>' . Lang::T('Reason') . ': ' . htmlspecialchars($reason) : ''),
+            $admin['fullname']
+        );
+
         Message::sendTelegram("#u" . $customer['username'] . " (#id" . $customer['id'] . ") #recharge #rejected\n" .
             "Reason: " . $reason);
         
-        _log('Admin ' . $admin['username'] . ' rejected recharge request #' . $id . ' for customer ' . $customer['username'], 'Admin', $admin['id']);
+        _log('[' . $admin['username'] . ']: Rejected recharge request #' . $id . ' for customer ' . $customer['username'] . ' - Reason: ' . $reason, $admin['user_type'], $admin['id']);
         
         r2(getUrl('recharge_requests/list'), 's', Lang::T('Recharge request rejected'));
         break;
