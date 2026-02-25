@@ -178,7 +178,11 @@
 
 <script>
 function showRejectForm() {
-    $('#rejectFormModal').modal('show');
+    if (typeof jQuery !== 'undefined') {
+        jQuery('#rejectFormModal').modal('show');
+    } else {
+        document.getElementById('rejectFormModal').style.display = 'block';
+    }
 }
 </script>
 

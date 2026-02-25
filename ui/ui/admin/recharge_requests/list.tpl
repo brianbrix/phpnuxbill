@@ -112,12 +112,28 @@ function rejectRequest(id) {
     $('#rejectModal').modal('show');
 }
 
-$('#rejectModal form').on('submit', function(e) {
-    e.preventDefault();
-    const id = $('#reject_id').val();
-    const reason = $('[name="reason"]').val();
-    window.location.href = '{Text::url('recharge_requests/reject/')}' + id + '&reason=' + encodeURIComponent(reason);
-});
+// Wait for jQuery to be available
+if (typeof jQuery !== 'undefined') {
+    jQuery('#rejectModal form').on('submit', function(e) {
+        e.preventDefault();
+        const id = jQuery('#reject_id').val();
+        const reason = jQuery('[name="reason"]').val();
+        window.location.href = '{Text::url('recharge_requests/reject/')}' + id + '&reason=' + encodeURIComponent(reason);
+    });
+} else {
+    // Fallback without jQuery
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('#rejectModal form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const id = document.getElementById('reject_id').value;
+                const reason = document.querySelector('[name="reason"]').value;
+                window.location.href = '{Text::url('recharge_requests/reject/')}' + id + '&reason=' + encodeURIComponent(reason);
+            });
+        }
+    });
+}
 </script>
 
 {include file="sections/footer.tpl"}
