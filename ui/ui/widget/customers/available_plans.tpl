@@ -63,14 +63,18 @@
                 text-align: center;
                 margin-top: 10px;
                 padding: 8px;
-                background: #1a73e8;
-                color: #fff !important;
                 border-radius: 6px;
                 font-weight: 600;
                 font-size: 14px;
                 text-decoration: none !important;
+                cursor: pointer;
             }
-            .plan-buy-btn:hover { background: #1558c0; }
+            .plan-buy-btn-pg { background: #1a73e8; color: #fff !important; }
+            .plan-buy-btn-pg:hover { background: #1558c0; }
+            .plan-buy-btn-req { background: #e67e22; color: #fff !important; border: none; width: 100%; }
+            .plan-buy-btn-req:hover { background: #c0510a; }
+            .plan-buy-btn-reg { background: #28a745; color: #fff !important; }
+            .plan-buy-btn-reg:hover { background: #1e7e34; }
             .plans-grid { display: flex; flex-wrap: wrap; margin: -6px; }
             .plans-grid .plan-col { padding: 6px; box-sizing: border-box; width: 50%; }
             @media(max-width: 480px) { .plans-grid .plan-col { width: 100%; } }
@@ -115,13 +119,100 @@
                         <i class="glyphicon glyphicon-tag"></i> {$plan.type} &bull; {$plan.plan_type}
                     </div>
 
-                    <a href="{Text::url('order/package')}" class="plan-buy-btn">
-                        {Lang::T('Subscribe')} &rarr;
-                    </a>
+                    {* Subscribe button - 3 behaviors based on login state and payment gateway *}
+                    {if !$_user}
+                        {* Not logged in → Register *}
+                        <a href="{Text::url('register')}" class="plan-buy-btn plan-buy-btn-reg">
+                            <i class="glyphicon glyphicon-user"></i> {Lang::T('Register to Subscribe')}
+                        </a>
+                    {elseif $_c['payment_gateway'] neq ''}
+                        {* Logged in + payment gateway available → Order page *}
+                        <a href="{Text::url('order/package')}" class="plan-buy-btn plan-buy-btn-pg">
+                            {Lang::T('Subscribe')} &rarr;
+                        </a>
+                    {else}
+                        {* Logged in + no payment gateway → Request from admin *}
+                        <button class="plan-buy-btn plan-buy-btn-req"
+                            onclick="requestNewPlan('{$plan.id}', '{$plan.name_plan|escape:'html'}', '{Lang::moneyFormat($plan.price)}')">
+                            <i class="glyphicon glyphicon-send"></i> {Lang::T('Request from Admin')}
+                        </button>
+                    {/if}
                 </div>
             </div>
             {/foreach}
         </div>
     </div>
 </div>
+
+{* Modal for requesting a new plan from admin (shown when no payment gateway configured) *}
+{if $_user && $_c['payment_gateway'] eq ''}
+<div id="newPlanRequestModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><i class="glyphicon glyphicon-send"></i> Request Plan Subscription</h4>
+            </div>
+            <div class="modal-body">
+                <p>{Lang::T('You are requesting to subscribe to')}: <strong id="newPlanName"></strong></p>
+                <p class="text-muted small">{Lang::T('Price')}: <span id="newPlanPrice"></span></p>
+                <div class="form-group">
+                    <label>{Lang::T('Message to Admin')} ({Lang::T('Optional')})</label>
+                    <textarea class="form-control" id="newPlanMessage" rows="3"
+                        placeholder="e.g. Please activate as soon as possible..."></textarea>
+                </div>
+                <div id="newPlanResult" style="display:none;" class="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{Lang::T('Cancel')}</button>
+                <button type="button" class="btn btn-warning" id="sendNewPlanBtn" onclick="sendNewPlanRequest()">
+                    <i class="glyphicon glyphicon-send"></i> {Lang::T('Send Request')}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+var _newPlanId = null;
+function requestNewPlan(planId, planName, planPrice) {
+    _newPlanId = planId;
+    document.getElementById('newPlanName').textContent = planName;
+    document.getElementById('newPlanPrice').textContent = planPrice;
+    document.getElementById('newPlanMessage').value = '';
+    document.getElementById('newPlanResult').style.display = 'none';
+    document.getElementById('sendNewPlanBtn').disabled = false;
+    jQuery('#newPlanRequestModal').modal('show');
+}
+function sendNewPlanRequest() {
+    var message = document.getElementById('newPlanMessage').value;
+    var btn = document.getElementById('sendNewPlanBtn');
+    btn.disabled = true;
+    jQuery.ajax({
+        type: 'POST',
+        url: '{Text::url('autoload_user/request_new_plan')}',
+        data: { plan_id: _newPlanId, message: message },
+        dataType: 'json',
+        success: function(resp) {
+            var el = document.getElementById('newPlanResult');
+            el.style.display = 'block';
+            if (resp.status === 'success') {
+                el.className = 'alert alert-success';
+                el.textContent = resp.message;
+                setTimeout(function(){ jQuery('#newPlanRequestModal').modal('hide'); }, 2500);
+            } else {
+                el.className = 'alert alert-danger';
+                el.textContent = resp.message;
+                btn.disabled = false;
+            }
+        },
+        error: function() {
+            document.getElementById('newPlanResult').className = 'alert alert-danger';
+            document.getElementById('newPlanResult').textContent = 'Request failed. Please try again.';
+            document.getElementById('newPlanResult').style.display = 'block';
+            btn.disabled = false;
+        }
+    });
+}
+</script>
+{/if}
 {/if}

@@ -1,5 +1,35 @@
 {if $_bills}
+    {* === TOP SUMMARY BAR: one line per active plan === *}
+    {assign var="_active_count" value=0}
+    {foreach $_bills as $_b}{if $_b['status'] == 'on'}{assign var="_active_count" value=$_active_count+1}{/if}{/foreach}
+
+    <div style="margin-bottom:8px;">
+        {foreach $_bills as $_b}
+            {if $_b['status'] == 'on'}
+            <div style="display:flex; align-items:center; background:#e8f5e9; border-left:4px solid #28a745; border-radius:6px; padding:7px 12px; margin-bottom:5px; font-size:13px;">
+                <span style="background:#28a745; color:#fff; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; margin-right:8px; flex-shrink:0;">✓</span>
+                <strong style="flex:1;">{$_b['namebp']}</strong>
+                <span style="color:#555; margin-left:8px;">{$_b['type']}</span>
+                <span style="color:#e74c3c; margin-left:12px; white-space:nowrap;">
+                    {Lang::T('Expires')}: {Lang::dateAndTimeFormat($_b['expiration'],$_b['time'])}
+                </span>
+            </div>
+            {/if}
+        {/foreach}
+        {if $_active_count == 0}
+            <div style="background:#fff3cd; border-left:4px solid #ffc107; border-radius:6px; padding:7px 12px; font-size:13px; color:#856404;">
+                <i class="glyphicon glyphicon-warning-sign"></i> {Lang::T('No active plan')}
+            </div>
+        {/if}
+    </div>
+
     <div class="box box-primary box-solid">
+        {if $_active_count > 1}
+        <div style="background:#d1ecf1; padding:6px 12px; font-size:12px; color:#0c5460; border-bottom:1px solid #bee5eb;">
+            <i class="glyphicon glyphicon-info-sign"></i>
+            {$_active_count} {Lang::T('active plans')} — {Lang::T('each plan runs independently on its own router/session')}
+        </div>
+        {/if}
         {foreach $_bills as $_bill}
             {if $_bill['routers'] != 'radius'}
                 <div class="box-header">
@@ -120,9 +150,18 @@
                     <tr>
                         <td class="small text-primary text-uppercase text-normal">
                             {if $_bill['status'] == 'on' && $_bill['prepaid'] != 'YES'}
+                                {* Postpaid: deactivate (permanent disconnect) *}
                                 <a href="{Text::url('home&deactivate=', $_bill['id'])}"
                                     onclick="return ask(this, '{Lang::T('Deactivate')}?')" class="btn btn-danger btn-xs"><i
                                         class="glyphicon glyphicon-trash"></i></a>
+                            {/if}
+                            {if $_bill['status'] == 'on' && $_bill['prepaid'] == 'yes'}
+                                {* Prepaid: cancel (stop internet, plan goes inactive) *}
+                                <a href="{Text::url('home&deactivate=', $_bill['id'])}"
+                                    onclick="return ask(this, '{Lang::T('Cancel this plan? Your internet access will stop immediately.')}?')"
+                                    class="btn btn-danger btn-xs">
+                                    <i class="glyphicon glyphicon-ban-circle"></i> {Lang::T('Cancel')}
+                                </a>
                             {/if}
                             {if $_bill['status'] != 'on'}
                                 <a href="{Text::url('home&forget=', $_bill['id'], '&stoken=', App::getToken())}"

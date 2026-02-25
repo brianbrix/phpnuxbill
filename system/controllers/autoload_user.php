@@ -78,6 +78,50 @@ switch ($action) {
             }
         }
         die();
+    case 'request_new_plan':
+        // Customer requests a new plan subscription (no existing bill needed)
+        header('Content-Type: application/json');
+        try {
+            $plan_id = _post('plan_id');
+            $message = _post('message', '');
+            if (empty($plan_id)) {
+                throw new Exception('Invalid plan ID');
+            }
+            $plan = ORM::for_table('tbl_plans')->where('id', $plan_id)->where('enabled', 1)->find_one();
+            if (!$plan) {
+                throw new Exception('Plan not found');
+            }
+            // Create recharge request record (no bill_id since they don't have one yet)
+            $request = ORM::for_table('tbl_recharge_requests')->create();
+            $request->customer_id = $user['id'];
+            $request->username = $user['username'];
+            $request->bill_id = 0;
+            $request->plan_id = $plan_id;
+            $request->plan_name = $plan['name_plan'];
+            $request->message = 'NEW PLAN REQUEST: ' . $message;
+            $request->status = 'pending';
+            $request->requested_date = date('Y-m-d H:i:s');
+            $request->save();
+            // Notify admins
+            $admins = ORM::for_table('tbl_users')->where('user_type', 'SuperAdmin')->find_many();
+            foreach ($admins as $adm) {
+                $notification = ORM::for_table('tbl_admin_notifications')->create();
+                $notification->admin_id = $adm['id'];
+                $notification->type = 'new_plan_request';
+                $notification->title = 'New Plan Request from ' . $user['fullname'];
+                $notification->message = $user['fullname'] . ' (' . $user['username'] . ') wants to subscribe to: ' . $plan['name_plan'];
+                $notification->related_id = $request->id;
+                $notification->status = 'unread';
+                $notification->created_date = date('Y-m-d H:i:s');
+                $notification->save();
+            }
+            @Message::sendTelegram("#u" . $user['username'] . " wants to subscribe to plan: " . $plan['name_plan'] . "\n" . "Message: " . $message);
+            _log('Customer ' . $user['username'] . ' requested new plan: ' . $plan['name_plan'], 'Customer', $user['id']);
+            echo json_encode(['status' => 'success', 'message' => 'Request sent! Admin will activate your plan shortly.']);
+        } catch (Exception $e) {
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        die();
     case 'request_recharge':
         // Handle recharge request from customer
         header('Content-Type: application/json');
