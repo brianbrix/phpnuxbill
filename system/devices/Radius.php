@@ -199,6 +199,7 @@ class Radius
     {
         // FreeRADIUS stores acctstoptime as NULL OR '0000-00-00 00:00:00' for open sessions.
         // We must handle both cases to correctly detect active sessions.
+        // Use raw SQL to avoid ORM issues with NULL comparisons.
         $acct = ORM::for_table('radacct', 'radius')
             ->where('username', $customer['username'])
             ->where_raw('(acctstoptime IS NULL OR acctstoptime = \'0000-00-00 00:00:00\')')
@@ -209,18 +210,21 @@ class Radius
             return false;
         }
 
-        // If FreeRADIUS sends interim updates, acctupdatetime will be populated.
-        // Treat session as live only if updated in the last 10 minutes.
+        // If FreeRADIUS sends interim updates, use acctupdatetime as a freshness check.
+        // Default FreeRADIUS interim-update interval is 1800s (30 min), so use 1 hour
+        // as the stale-session threshold to avoid false "offline" readings.
+        $updateTime = $acct['acctupdatetime'];
         if (
-            !empty($acct['acctupdatetime']) &&
-            $acct['acctupdatetime'] !== '0000-00-00 00:00:00' &&
-            $acct['acctupdatetime'] !== null
+            !empty($updateTime) &&
+            $updateTime !== '0000-00-00 00:00:00'
         ) {
-            $lastUpdate = strtotime($acct['acctupdatetime']);
-            return (time() - $lastUpdate) < 600; // 600 seconds = 10 minutes
+            $lastUpdate = strtotime($updateTime);
+            if ($lastUpdate !== false) {
+                return (time() - $lastUpdate) < 3600; // 1 hour window
+            }
         }
 
-        // No interim updates configured — open session is enough to confirm online
+        // No interim updates — open acctstoptime is sufficient to confirm online
         return true;
     }
 
