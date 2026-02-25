@@ -10,7 +10,7 @@ $ui->assign('_title', Lang::T('Recharge Requests'));
 $ui->assign('_system_menu', 'recharge_requests');
 
 $action = $routes['1'];
-$admin = Admin::info();
+$admin = Admin::_info();
 $ui->assign('_admin', $admin);
 
 switch ($action) {
