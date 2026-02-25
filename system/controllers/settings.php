@@ -1173,6 +1173,17 @@ switch ($action) {
         $ui->display('admin/settings/miscellaneous.tpl');
         break;
 
+    case 'clearcache':
+        if (!in_array($admin['user_type'], ['SuperAdmin', 'Admin'])) {
+            _alert(Lang::T('You do not have permission to access this page'), 'danger', "dashboard");
+            exit;
+        }
+        // Clear Smarty compiled templates and cache
+        $ui->clearAllCache();
+        $ui->clearCompiledTemplate();
+        r2(getUrl('settings/app'), 's', 'Template cache cleared successfully.');
+        break;
+
     default:
         $ui->display('admin/404.tpl');
 }

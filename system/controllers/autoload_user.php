@@ -113,7 +113,7 @@ switch ($action) {
             $request->save();
             
             // Send notification to admin
-            $admins = ORM::for_table('tbl_user')->where('user_type', 'SuperAdmin')->find_many();
+            $admins = ORM::for_table('tbl_users')->where('user_type', 'SuperAdmin')->find_many();
             foreach ($admins as $admin) {
                 $notification = ORM::for_table('tbl_admin_notifications')->create();
                 $notification->admin_id = $admin['id'];
