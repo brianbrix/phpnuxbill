@@ -58,10 +58,17 @@ switch ($action) {
         
         // Process the recharge
         $customer = ORM::for_table('tbl_customers')->find_one($request['customer_id']);
-        $bill = ORM::for_table('tbl_user_recharges')->find_one($request['bill_id']);
         $plan = ORM::for_table('tbl_plans')->find_one($request['plan_id']);
-        
-        if (Package::rechargeUser($customer['id'], $bill['routers'], $plan['id'], 'Admin', 'Recharge Request')) {
+
+        if (!$customer || !$plan) {
+            r2(getUrl('recharge_requests/view/' . $id), 'e', Lang::T('Customer or plan not found'));
+        }
+
+        // When bill_id = 0 it's a new plan request; use plan's router. Otherwise use existing bill's router.
+        $bill = ($request['bill_id'] > 0) ? ORM::for_table('tbl_user_recharges')->find_one($request['bill_id']) : null;
+        $router_name = ($bill && !empty($bill['routers'])) ? $bill['routers'] : $plan['routers'];
+
+        if (Package::rechargeUser($customer['id'], $router_name, $plan['id'], 'Admin', 'Recharge Request')) {
             $request->status = 'completed';
             $request->admin_id = $admin['id'];
             $request->admin_response = 'Recharged successfully by admin';
