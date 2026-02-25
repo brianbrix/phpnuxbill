@@ -121,5 +121,59 @@
             </div>
         </div>
     </div>
+
+    {if $_reg_plans}
+    <style>
+        .reg-plans-section { margin-top: 18px; }
+        .reg-plans-section h3 {
+            font-size: 18px; font-weight: 700; color: #333;
+            margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;
+        }
+        .reg-plan-cards { display: flex; flex-wrap: wrap; gap: 10px; }
+        .reg-plan-card {
+            flex: 1 1 calc(50% - 10px);
+            min-width: 140px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+            position: relative;
+        }
+        .reg-plan-card.has-badge { border-color: #1a73e8; }
+        .reg-plan-name { font-weight: 700; font-size: 14px; color: #222; margin-bottom: 4px; }
+        .reg-plan-price { font-size: 20px; font-weight: 800; color: #1a73e8; margin-bottom: 6px; }
+        .reg-plan-meta { font-size: 11px; color: #666; margin-bottom: 2px; }
+        .reg-plan-badges { margin-bottom: 6px; }
+        .reg-plan-badge {
+            display: inline-block; font-size: 10px; padding: 2px 7px;
+            border-radius: 20px; background: #1a73e8; color: #fff;
+            font-weight: 600; margin-right: 2px; margin-bottom: 2px;
+        }
+        @media(max-width: 400px) { .reg-plan-card { flex: 1 1 100%; } }
+    </style>
+    <div class="reg-plans-section">
+        <h3>📶 Available Plans</h3>
+        <div class="reg-plan-cards">
+            {foreach $_reg_plans as $rp}
+            <div class="reg-plan-card {if $rp.badges}has-badge{/if}">
+                {if $rp.badges}
+                <div class="reg-plan-badges">
+                    {foreach $rp.badges as $badge}
+                    <span class="reg-plan-badge">{$badge}</span>
+                    {/foreach}
+                </div>
+                {/if}
+                <div class="reg-plan-name">{$rp.name_plan}</div>
+                <div class="reg-plan-price">{Lang::moneyFormat($rp.price)}</div>
+                {if $rp.speed neq ''}<div class="reg-plan-meta">📡 {$rp.speed}</div>{/if}
+                <div class="reg-plan-meta">⏱ {$rp.validity_label}</div>
+                {if $rp.data_label neq ''}<div class="reg-plan-meta">☁️ {$rp.data_label}</div>{/if}
+                <div class="reg-plan-meta" style="color:#999;">{$rp.type}</div>
+            </div>
+            {/foreach}
+        </div>
+    </div>
+    {/if}
 </body>
 </html>

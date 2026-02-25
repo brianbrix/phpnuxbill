@@ -16,6 +16,60 @@ if (isset($routes['1'])) {
 
 $otpPath = $CACHE_PATH . File::pathFixer('/sms/');
 
+// Pre-load available plans for display on registration pages
+$_reg_plans = [];
+try {
+    $usageCounts = [];
+    ORM::raw_execute('SELECT plan_id, COUNT(*) as cnt FROM tbl_user_recharges GROUP BY plan_id');
+    $stmt = ORM::get_last_statement();
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $usageCounts[(int)$row['plan_id']] = (int)$row['cnt'];
+    }
+    $rawPlans = ORM::for_table('tbl_plans')
+        ->where('enabled', 1)
+        ->where_not_equal('type', 'Balance')
+        ->order_by_asc('price')
+        ->find_array();
+    foreach ($rawPlans as &$rp) {
+        $rp['usage_count'] = isset($usageCounts[(int)$rp['id']]) ? $usageCounts[(int)$rp['id']] : 0;
+        switch ($rp['validity_unit']) {
+            case 'Mins':   $rp['validity_days'] = round($rp['validity'] / 1440, 2); break;
+            case 'Hrs':    $rp['validity_days'] = round($rp['validity'] / 24, 2); break;
+            case 'Days':   $rp['validity_days'] = (int)$rp['validity']; break;
+            case 'Months': $rp['validity_days'] = (int)$rp['validity'] * 30; break;
+            default:       $rp['validity_days'] = (int)$rp['validity']; break;
+        }
+        $rp['efficiency_score'] = ($rp['price'] > 0 && $rp['validity_days'] > 0)
+            ? round($rp['validity_days'] / (float)$rp['price'], 6) : 0;
+        $rp['validity_label'] = $rp['validity'] . ' ' . $rp['validity_unit'];
+        if (!empty($rp['data_limit']) && !empty($rp['data_unit'])) {
+            $rp['data_label'] = $rp['data_limit'] . ' ' . $rp['data_unit'];
+        } elseif ($rp['typebp'] == 'Unlimited') {
+            $rp['data_label'] = 'Unlimited';
+        } else {
+            $rp['data_label'] = '';
+        }
+        $bw = ORM::for_table('tbl_bandwidth')->find_one($rp['id_bw']);
+        $rp['speed'] = $bw ? $bw['rate_down'] . $bw['rate_down_unit'] . '↓/' . $bw['rate_up'] . $bw['rate_up_unit'] . '↑' : '';
+        $rp['badges'] = [];
+    }
+    unset($rp);
+    if (!empty($rawPlans)) {
+        $maxUsage = max(array_column($rawPlans, 'usage_count'));
+        $minPrice = min(array_map(function ($p) { return (float)$p['price']; }, $rawPlans));
+        $maxEff   = max(array_column($rawPlans, 'efficiency_score'));
+        $bP = $bC = $bV = false;
+        foreach ($rawPlans as &$rp) {
+            if (!$bP && $maxUsage > 0 && $rp['usage_count'] == $maxUsage) { $rp['badges'][] = '🔥 Most Popular'; $bP = true; }
+            if (!$bC && (float)$rp['price'] == $minPrice)                  { $rp['badges'][] = '💰 Cheapest';     $bC = true; }
+            if (!$bV && $maxEff > 0 && $rp['efficiency_score'] == $maxEff) { $rp['badges'][] = '⭐ Best Value';   $bV = true; }
+        }
+        unset($rp);
+    }
+    $_reg_plans = $rawPlans;
+} catch (Exception $e) {}
+$ui->assign('_reg_plans', $_reg_plans);
+
 switch ($do) {
     case 'post':
         $otp_code = _post('otp_code');
