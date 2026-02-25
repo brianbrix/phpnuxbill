@@ -231,6 +231,22 @@ if (isset($_GET['recharge']) && !empty($_GET['recharge'])) {
     } else {
         r2(getUrl('home'), 'e', 'No Active Plan');
     }
+} else if (isset($_GET['forget']) && !empty($_GET['forget'])) {
+    // Forget expired/inactive plan - Archives it by setting is_archived flag
+    if (!empty(App::getTokenValue(_get('stoken')))) {
+        r2(getUrl('home'), 'e', "Invalid Request Token");
+    }
+    $bill = ORM::for_table('tbl_user_recharges')->where('id', $_GET['forget'])->where('username', $user['username'])->findOne();
+    if ($bill && $bill['status'] != 'on') {
+        // Only allow archiving expired/inactive plans
+        $bill->is_archived = 1;
+        $bill->save();
+        App::setToken(_get('stoken'), $_GET['forget']);
+        _log('User ' . $bill['username'] . ' Archived ' . $bill['namebp'], 'Customer', $bill['customer_id']);
+        r2(getUrl('home'), 's', 'Plan archived successfully');
+    } else {
+        r2(getUrl('home'), 'e', 'Can only archive expired/inactive plans');
+    }
 }
 
 if (!empty($_SESSION['nux-mac']) && !empty($_SESSION['nux-ip'] && $_c['hs_auth_method'] != 'hchap')) {

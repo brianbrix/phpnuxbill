@@ -78,6 +78,63 @@ switch ($action) {
             }
         }
         die();
+    case 'request_recharge':
+        // Handle recharge request from customer
+        header('Content-Type: application/json');
+        $bill_id = _post('bill_id');
+        $message = _post('message');
+        
+        if (empty($bill_id)) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid bill ID']);
+            die();
+        }
+        
+        // Get the bill details
+        $bill = ORM::for_table('tbl_user_recharges')
+            ->where('id', $bill_id)
+            ->where('username', $user['username'])
+            ->find_one();
+        
+        if (!$bill) {
+            echo json_encode(['status' => 'error', 'message' => 'Plan not found']);
+            die();
+        }
+        
+        // Create recharge request record
+        $request = ORM::for_table('tbl_recharge_requests')->create();
+        $request->customer_id = $user['id'];
+        $request->username = $user['username'];
+        $request->bill_id = $bill_id;
+        $request->plan_id = $bill['plan_id'];
+        $request->plan_name = $bill['namebp'];
+        $request->message = $message;
+        $request->status = 'pending';
+        $request->requested_date = date('Y-m-d H:i:s');
+        $request->save();
+        
+        // Send notification to admin
+        $admins = ORM::for_table('tbl_user')->where('user_type', 'SuperAdmin')->find_many();
+        foreach ($admins as $admin) {
+            $notification = ORM::for_table('tbl_admin_notifications')->create();
+            $notification->admin_id = $admin['id'];
+            $notification->type = 'recharge_request';
+            $notification->title = 'New Recharge Request from ' . $user['fullname'];
+            $notification->message = $user['fullname'] . ' (' . $user['username'] . ') requested recharge for plan: ' . $bill['namebp'];
+            $notification->related_id = $request->id;
+            $notification->status = 'unread';
+            $notification->created_date = date('Y-m-d H:i:s');
+            $notification->save();
+        }
+        
+        // Send telegram notification
+        Message::sendTelegram("#u" . $user['username'] . " (#id" . $user['id'] . ") #request #recharge\n" .
+            "Plan: " . $bill['namebp'] . "\n" .
+            "Message: " . $message);
+        
+        _log('Customer ' . $user['username'] . ' requested recharge for ' . $bill['namebp'], 'Customer', $user['id']);
+        
+        echo json_encode(['status' => 'success', 'message' => 'Recharge request sent successfully']);
+        die();
     default:
         die();
 }

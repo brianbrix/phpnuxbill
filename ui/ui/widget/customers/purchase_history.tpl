@@ -96,20 +96,91 @@
 
 <script>
 function togglePurchaseDetail(event, elementId) {
-    const element = document.getElementById(elementId);
-    const arrow = event.currentTarget.querySelector('i[class*="chevron"]');
+    event.preventDefault();
+    event.stopPropagation();
     
-    if (element.style.display === 'none') {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const arrowIcons = event.currentTarget.querySelectorAll('i[class*="chevron"]');
+    const arrow = arrowIcons.length > 0 ? arrowIcons[0] : null;
+    
+    if (element.style.display === 'none' || element.style.display === '') {
         element.style.display = 'block';
-        if (arrow) arrow.style.transform = 'rotate(180deg)';
+        if (arrow) {
+            arrow.classList.remove('fa-chevron-down');
+            arrow.classList.add('fa-chevron-up');
+        }
     } else {
         element.style.display = 'none';
-        if (arrow) arrow.style.transform = 'rotate(0deg)';
+        if (arrow) {
+            arrow.classList.add('fa-chevron-down');
+            arrow.classList.remove('fa-chevron-up');
+        }
     }
 }
 
+function requestRecharge(billId, planName) {
+    const modal = document.getElementById('rechargeRequestModal') || createRechargeModal();
+    document.getElementById('recharge_bill_id').value = billId;
+    document.getElementById('recharge_plan_name').textContent = planName;
+    $(modal).modal('show');
+}
+
+function createRechargeModal() {
+    const modal = document.createElement('div');
+    modal.id = 'rechargeRequestModal';
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Request Plan Recharge</h4>
+                </div>
+                <div class="modal-body">
+                    <p>You are requesting a recharge for: <strong id="recharge_plan_name"></strong></p>
+                    <form id="rechargeRequestForm">
+                        <input type="hidden" id="recharge_bill_id" name="bill_id">
+                        <input type="hidden" name="csrf_token" value="{$csrf_token|default:''}">
+                        <div class="form-group">
+                            <label>Request Message (Optional)</label>
+                            <textarea class="form-control" name="message" rows="3" placeholder="Add any special request or note..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block">Send Request to Admin</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    return modal;
+}
+
+// Handle recharge request submission
+$(document).on('submit', '#rechargeRequestForm', function(e) {
+    e.preventDefault();
+    const billId = document.getElementById('recharge_bill_id').value;
+    const message = $('[name="message"]').val();
+    
+    $.post('{Text::url('autoload_user/request_recharge')}', {
+        bill_id: billId,
+        message: message,
+        csrf_token: $('[name="csrf_token"]').val()
+    }, function(resp) {
+        if (resp.status === 'success') {
+            alert('Recharge request sent successfully!');
+            $('#rechargeRequestModal').modal('hide');
+        } else {
+            alert('Error: ' + (resp.message || 'Failed to send request'));
+        }
+    }, 'json');
+});
+
 // Add mobile-friendly styles
-{literal}
+</script>
 <style>
 @media (max-width: 768px) {
     .purchase-item-header {
@@ -118,13 +189,6 @@ function togglePurchaseDetail(event, elementId) {
     
     .purchase-item-header > div:last-child {
         display: none;
-    }
-    
-    .purchase-item-header::after {
-        content: attr(data-arrow);
-        width: 100%;
-        text-align: right;
-        font-size: 14px;
     }
     
     .purchase-details {
@@ -136,5 +200,3 @@ function togglePurchaseDetail(event, elementId) {
     }
 }
 </style>
-{/literal}
-</script>

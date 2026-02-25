@@ -273,6 +273,7 @@ class User
             ->select('tbl_bandwidth.name_bw', 'name_bw')
             ->select('tbl_plans.price', 'price')
             ->where('customer_id', $id)
+            ->where('is_archived', 0)
             ->find_many();
         return $d;
     }

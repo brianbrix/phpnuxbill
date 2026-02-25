@@ -124,6 +124,11 @@
                                     onclick="return ask(this, '{Lang::T('Deactivate')}?')" class="btn btn-danger btn-xs"><i
                                         class="glyphicon glyphicon-trash"></i></a>
                             {/if}
+                            {if $_bill['status'] != 'on'}
+                                <a href="{Text::url('home&forget=', $_bill['id'], '&stoken=', App::getToken())}"
+                                    onclick="return ask(this, '{Lang::T('Hide this plan')}?')" class="btn btn-secondary btn-xs" style="background-color: #999; color: white;"><i
+                                        class="glyphicon glyphicon-eye-close"></i> {Lang::T('Forget')}</a>
+                            {/if}
                         </td>
                         <td class="small row">
                             {if $_bill['status'] != 'on' && $_bill['prepaid'] != 'yes' && $_c['extend_expired']}
@@ -134,6 +139,9 @@
                             <a class="btn btn-primary pull-right btn-sm"
                                 href="{Text::url('home&recharge=', $_bill['id'], '&stoken=', App::getToken())}"
                                 onclick="return ask(this, '{Lang::T('Recharge')}?')">{Lang::T('Recharge')}</a>
+                            <a class="btn btn-info pull-right btn-sm" style="margin-right: 5px;" onclick="requestRecharge('{$_bill['id']}', '{$_bill['namebp']|escape:'html'}')">
+                                <i class="glyphicon glyphicon-plus"></i> {Lang::T('Request')}
+                            </a>
                             <a class="btn btn-warning text-black pull-right btn-sm"
                                 href="{Text::url('home&sync=', $_bill['id'], '&stoken=', App::getToken())}"
                                 onclick="return ask(this, '{Lang::T('Sync account if you failed login to internet')}?')"
