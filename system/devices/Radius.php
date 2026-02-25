@@ -199,7 +199,6 @@ class Radius
     {
         // FreeRADIUS stores acctstoptime as NULL OR '0000-00-00 00:00:00' for open sessions.
         // We must handle both cases to correctly detect active sessions.
-        // Use raw SQL to avoid ORM issues with NULL comparisons.
         $acct = ORM::for_table('radacct', 'radius')
             ->where('username', $customer['username'])
             ->where_raw('(acctstoptime IS NULL OR acctstoptime = \'0000-00-00 00:00:00\')')
@@ -210,21 +209,23 @@ class Radius
             return false;
         }
 
-        // If FreeRADIUS sends interim updates, use acctupdatetime as a freshness check.
-        // Default FreeRADIUS interim-update interval is 1800s (30 min), so use 1 hour
-        // as the stale-session threshold to avoid false "offline" readings.
+        // Use the configured Radius Rest Interim-Update interval (minutes) as the freshness window.
+        // If not set, default to 30 minutes. Double it to give a full cycle of tolerance.
+        global $config;
+        $interim_minutes = (!empty($config['frrest_interim_update']) && $config['frrest_interim_update'] > 0)
+            ? (int)$config['frrest_interim_update']
+            : 30;
+        $stale_threshold = $interim_minutes * 60 * 2; // 2× the interval as tolerance
+
         $updateTime = $acct['acctupdatetime'];
-        if (
-            !empty($updateTime) &&
-            $updateTime !== '0000-00-00 00:00:00'
-        ) {
+        if (!empty($updateTime) && $updateTime !== '0000-00-00 00:00:00') {
             $lastUpdate = strtotime($updateTime);
             if ($lastUpdate !== false) {
-                return (time() - $lastUpdate) < 3600; // 1 hour window
+                return (time() - $lastUpdate) < $stale_threshold;
             }
         }
 
-        // No interim updates — open acctstoptime is sufficient to confirm online
+        // No interim updates configured — open acctstoptime is sufficient to confirm online
         return true;
     }
 
