@@ -1,2 +1,125 @@
-Before you registered, you must Buy Voucher first<br><br>
-Sebelum mendaftar pastikan anda membeli voucher terlebih dahulu
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .registration-info {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            padding: 25px;
+            border-radius: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            color: #333;
+        }
+        .registration-info h2 {
+            margin: 0 0 20px 0;
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .registration-info .icon {
+            font-size: 32px;
+            margin-right: 12px;
+        }
+        .info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .info-card .alert-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .info-card .alert-box strong {
+            color: #856404;
+            font-size: 16px;
+        }
+        .steps-container {
+            margin-top: 20px;
+        }
+        .step {
+            display: flex;
+            align-items: start;
+            margin: 15px 0;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .step-number {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-content strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-info">
+        <h2>
+            <span class="icon">ℹ️</span>
+            <span>Registration Information</span>
+        </h2>
+        <div class="info-card">
+            <div class="steps-container">
+                <h3 style="margin: 0 0 15px 0; color: #333;">How to Get Started:</h3>
+                
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <strong>Create Your Account</strong>
+                        Visit our registration page and fill in your account details to create your account.
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <strong>Verify Your Information</strong>
+                        Confirm your email address and complete any required verification steps.
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <strong>Purchase a Voucher (Optional)</strong>
+                        Browse and select a data plan from our available packages. You can purchase a voucher anytime during or after registration.
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <strong>Activate and Enjoy</strong>
+                        Once registered, log in with your credentials and start browsing immediately!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,1 +1,80 @@
-You can buy a voucher in my home<br><br><br>Dapatkan Voucher Internet di Warung terdekat
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .voucher-order-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 25px;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .voucher-order-info h2 {
+            margin: 0 0 20px 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .voucher-order-info .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .info-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .info-box p {
+            margin: 12px 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .benefits-list {
+            text-align: left;
+            margin: 15px auto;
+            max-width: 400px;
+        }
+        .benefits-list li {
+            margin: 10px 0;
+            list-style: none;
+            padding-left: 25px;
+            position: relative;
+        }
+        .benefits-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="voucher-order-info">
+        <div class="icon">🎫</div>
+        <h2>Purchase Vouchers Online</h2>
+        <div class="info-box">
+            <p><strong>Buy vouchers from the comfort of your home!</strong></p>
+            <p>No need to visit our office. Get instant internet access vouchers delivered digitally.</p>
+            <ul class="benefits-list">
+                <li>Instant digital delivery</li>
+                <li>Multiple payment options</li>
+                <li>24/7 online ordering</li>
+                <li>Secure payment processing</li>
+                <li>Various package options available</li>
+            </ul>
+            <p style="margin-top: 20px;"><strong>Choose your plan and get connected today!</strong></p>
+        </div>
+    </div>
+</body>
+</html>

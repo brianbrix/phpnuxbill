@@ -1,24 +1,97 @@
-<table border="0" cellspacing="0" cellpadding="2">
-    <tbody><tr>
-        <td valign="middle">
-            <center><img src="system/uploads/logo.png"></center>
-            <table width="100%" border="1" cellspacing="0" cellpadding="1" bordercolor="#757575">
-                <tbody>
-                    <tr>
-                        <td valign="middle" align="center" style="font-size:25px">
-                            [[qrcode]]</td>
-                    </tr>
-                    <tr>
-                        <td valign="middle" align="center" style="font-size:20px">
-                            [[voucher_code]]</td>
-                    </tr>
-                    <tr>
-                        <td valign="middle" align="center" style="font-size:15px">
-                            [[plan]] [[price]]<br></td>
-                    </tr>
-                </tbody>
-            </table>
-            <center>[[company_name]]</center>
-        </td>
-    </tr>
-</tbody></table>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .voucher-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 25px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .logo-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #16a085;
+        }
+        .logo-header img {
+            max-width: 200px;
+            height: auto;
+        }
+        .voucher-content {
+            border: 2px solid #16a085;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        .info-row {
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .qr-row {
+            padding: 20px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .qr-row img {
+            display: block;
+            margin: 0 auto;
+        }
+        .code-row {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            background: #fff;
+        }
+        .plan-price-row {
+            font-size: 18px;
+            color: #16a085;
+            font-weight: bold;
+        }
+        .company-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="voucher-card">
+        <div class="logo-header">
+            <img src="system/uploads/logo.png" alt="Company Logo">
+        </div>
+        <div class="voucher-content">
+            <div class="info-row qr-row">
+                [[qrcode]]
+            </div>
+            <div class="info-row code-row">[[voucher_code]]</div>
+            <div class="info-row plan-price-row">[[plan]] - [[price]]</div>
+        </div>
+        <div class="company-footer">[[company_name]]</div>
+        <div class="footer-note">Scan QR code or enter voucher code to activate</div>
+    </div>
+</body>
+</html>

@@ -6,6 +6,8 @@ services:
     image: traefik:v2.10
     container_name: traefik
     restart: always
+    environment:
+      - DOCKER_API_VERSION=1.53
     command:
       - "--providers.docker=true"
       - "--entrypoints.web.address=:80"
@@ -25,6 +27,8 @@ services:
     image: mariadb:10.5
     container_name: nuxbill_db
     restart: always
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: myrootpassword
       MYSQL_DATABASE: nuxbill
@@ -34,7 +38,7 @@ services:
       - db_data:/var/lib/mysql
 
   phpnuxbill:
-    image: ./
+    build: ./phpnuxbill
     container_name: nuxbill_app
     restart: always
     depends_on:
@@ -42,14 +46,47 @@ services:
     environment:
       DB_HOST: db
       DB_NAME: nuxbill
-      DB_USER: phpnux
-      DB_PASS: strongpassword
+      DB_USER: nuxbill
+      DB_PASS: myrootpassword
+      BASE_URL: https://hotspot.afyaquik.com
+    volumes:
+      - ./phpnuxbill/config.php:/var/www/html/config.php:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.phpnuxbill.rule=Host(`hotspot.afyaquik.com`)"
       - "traefik.http.routers.phpnuxbill.entrypoints=websecure"
       - "traefik.http.routers.phpnuxbill.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.phpnuxbill.middlewares=phpnuxbill-headers"
       - "traefik.http.services.phpnuxbill.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.phpnuxbill-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.phpnuxbill-headers.headers.customrequestheaders.X-Forwarded-Port=443"
+      - "traefik.http.middlewares.phpnuxbill-headers.headers.customrequestheaders.X-Forwarded-Host=hotspot.afyaquik.com"
+      - "traefik.http.middlewares.phpnuxbill-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.phpnuxbill-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.phpnuxbill-headers.headers.stsPreload=true"
+      - "traefik.http.middlewares.phpnuxbill-headers.headers.forceSTSHeader=true"
 
+  freeradius:
+    build:
+      context: ./freeradius
+      dockerfile: Dockerfile
+    container_name: freeradius
+    restart: unless-stopped
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+    environment:
+      DB_HOST: db
+      DB_NAME: radius
+      DB_USER: nuxbill
+      DB_PASS: myrootpassword
+    depends_on:
+      - db
+    volumes:
+      - ./freeradius/mods-available/sql:/etc/freeradius/mods-available/sql:ro
+      - ./freeradius/mods-enabled/sql:/etc/freeradius/mods-enabled/sql:ro
+      - ./freeradius/config/clients.conf:/etc/freeradius/clients.conf:ro
+      - ./freeradius/config/users:/etc/freeradius/mods-config/files/authorize:ro
+    command: -X
 volumes:
   db_data:

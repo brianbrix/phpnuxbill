@@ -1,8 +1,65 @@
-Pengumuman Pelanggan!!<br>
-Besok libur<br>
-<br>
-Customer Announcement!!<br>
-Tomorrow holiday<br>
-<br>
-<br>
-This Announcement is for Customer Dashboard
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .dashboard-announcement {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            margin: 15px 0;
+        }
+        .dashboard-announcement h2 {
+            margin: 0 0 15px 0;
+            font-size: 22px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .dashboard-announcement .icon {
+            font-size: 26px;
+            margin-right: 10px;
+        }
+        .announcement-message {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            line-height: 1.7;
+            backdrop-filter: blur(10px);
+        }
+        .announcement-message p {
+            margin: 10px 0;
+        }
+        .notice-badge {
+            display: inline-block;
+            background: #fff;
+            color: #f5576c;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-announcement">
+        <h2>
+            <span class="icon">🔔</span>
+            <span>Customer Announcement</span>
+        </h2>
+        <div class="announcement-message">
+            <p><strong>Dear Valued Customer,</strong></p>
+            <p>Welcome to your customer dashboard! Here you can manage your internet service, view your usage statistics, and purchase new vouchers.</p>
+            <p>Stay updated with the latest news and service updates through this announcement section.</p>
+            <p>If you experience any issues or have questions, please don't hesitate to reach out to our support team.</p>
+            <span class="notice-badge">Stay Connected!</span>
+        </div>
+    </div>
+</body>
+</html>
