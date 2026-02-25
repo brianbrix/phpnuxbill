@@ -151,15 +151,19 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title"><i class="glyphicon glyphicon-send"></i> Request Plan Subscription</h4>
+                <h4 class="modal-title"><i class="glyphicon glyphicon-send"></i> {Lang::T('Request Plan Subscription')}</h4>
             </div>
             <div class="modal-body">
                 <p>{Lang::T('You are requesting to subscribe to')}: <strong id="newPlanName"></strong></p>
                 <p class="text-muted small">{Lang::T('Price')}: <span id="newPlanPrice"></span></p>
+                <div class="alert alert-warning">
+                    <strong><i class="glyphicon glyphicon-info-sign"></i> {Lang::T('Payment Instructions')}:</strong><br>
+                    {Lang::T('After your request, pay and send your username and payment confirmation to')} <strong>0745865323</strong>.
+                </div>
                 <div class="form-group">
                     <label>{Lang::T('Message to Admin')} ({Lang::T('Optional')})</label>
                     <textarea class="form-control" id="newPlanMessage" rows="3"
-                        placeholder="e.g. Please activate as soon as possible..."></textarea>
+                        placeholder="{Lang::T('Add any special request or note')}"></textarea>
                 </div>
                 <div id="newPlanResult" style="display:none;" class="alert"></div>
             </div>

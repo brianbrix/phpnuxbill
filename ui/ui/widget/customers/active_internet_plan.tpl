@@ -216,16 +216,20 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Request Plan Recharge</h4>
+                    <h4 class="modal-title">{Lang::T('Request Plan Recharge')}</h4>
                 </div>
                 <div class="modal-body">
-                    <p>You are requesting a recharge for: <strong id="recharge_plan_name"></strong></p>
-                    <div class="form-group">
-                        <label>Request Message (Optional)</label>
-                        <textarea class="form-control" id="recharge_message" rows="3" placeholder="Add any special request or note..."></textarea>
+                    <p>{Lang::T('You are requesting a recharge for')}: <strong id="recharge_plan_name"></strong></p>
+                    <div class="alert alert-warning">
+                        <strong><i class="glyphicon glyphicon-info-sign"></i> {Lang::T('Payment Instructions')}:</strong><br>
+                        {Lang::T('After your request, pay and send your username and payment confirmation to')} <strong>0745865323</strong>.
                     </div>
                     <div class="form-group">
-                        <button type="button" class="btn btn-primary btn-block" id="submitRechargeBtn">Send Request to Admin</button>
+                        <label>{Lang::T('Message')} ({Lang::T('Optional')})</label>
+                        <textarea class="form-control" id="recharge_message" rows="3" placeholder="{Lang::T('Add any special request or note')}"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary btn-block" id="submitRechargeBtn">{Lang::T('Send Request to Admin')}</button>
                     </div>
                 </div>
             </div>
