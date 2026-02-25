@@ -220,13 +220,57 @@
                 </div>
                 <div class="modal-body">
                     <p>{Lang::T('You are requesting a recharge for')}: <strong id="recharge_plan_name"></strong></p>
-                    <div class="alert alert-warning">
-                        <strong><i class="glyphicon glyphicon-info-sign"></i> {Lang::T('Payment Instructions')}:</strong><br>
-                        {Lang::T('After your request, pay and send your username and payment confirmation to')} <strong>0745865323</strong>.
+
+                    <div class="panel-group" id="paymentAccordionRecharge">
+                        <!-- M-Pesa -->
+                        <div class="panel panel-success">
+                            <div class="panel-heading" style="cursor:pointer" data-toggle="collapse" data-target="#mpesaStepsRecharge">
+                                <strong><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/M-PESA_LOGO-01.svg/120px-M-PESA_LOGO-01.svg.png" height="18" style="vertical-align:middle;margin-right:6px" onerror="this.style.display='none'">
+                                {Lang::T('Pay via M-Pesa Pochi La Biashara')}</strong>
+                                <span class="glyphicon glyphicon-chevron-down pull-right"></span>
+                            </div>
+                            <div id="mpesaStepsRecharge" class="panel-collapse collapse in">
+                                <div class="panel-body" style="font-size:13px">
+                                    <ol style="padding-left:18px;margin-bottom:0">
+                                        <li>{Lang::T('Open M-Pesa on your phone')}</li>
+                                        <li>{Lang::T('Select')} <strong>&ldquo;Lipa na M-Pesa&rdquo;</strong></li>
+                                        <li>{Lang::T('Select')} <strong>&ldquo;Pochi La Biashara&rdquo;</strong></li>
+                                        <li>{Lang::T('Enter business number')}: <strong>0745865323</strong></li>
+                                        <li>{Lang::T('Enter the exact plan amount')}</li>
+                                        <li>{Lang::T('Enter your M-Pesa PIN and confirm')}</li>
+                                        <li>{Lang::T('You will receive an SMS with a transaction code')}</li>
+                                        <li>{Lang::T('Send your username and that transaction code via SMS/WhatsApp to')} <strong>0745865323</strong> <em>(Brian Mokandu)</em></li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Airtel Money -->
+                        <div class="panel panel-danger">
+                            <div class="panel-heading" style="cursor:pointer" data-toggle="collapse" data-target="#airtelStepsRecharge">
+                                <strong><i class="glyphicon glyphicon-phone" style="margin-right:6px"></i>
+                                {Lang::T('Pay via Airtel Money')}</strong>
+                                <span class="glyphicon glyphicon-chevron-down pull-right"></span>
+                            </div>
+                            <div id="airtelStepsRecharge" class="panel-collapse collapse">
+                                <div class="panel-body" style="font-size:13px">
+                                    <ol style="padding-left:18px;margin-bottom:0">
+                                        <li>{Lang::T('Dial')} <strong>*185#</strong> {Lang::T('or open the Airtel Money app')}</li>
+                                        <li>{Lang::T('Select')} <strong>&ldquo;Send Money&rdquo;</strong></li>
+                                        <li>{Lang::T('Select')} <strong>&ldquo;To Mobile Number&rdquo;</strong></li>
+                                        <li>{Lang::T('Enter number')}: <strong>0734459479</strong></li>
+                                        <li>{Lang::T('Enter the exact plan amount')}</li>
+                                        <li>{Lang::T('Enter your Airtel PIN and confirm')}</li>
+                                        <li>{Lang::T('You will receive an SMS with a transaction code')}</li>
+                                        <li>{Lang::T('Send your username and that transaction code via SMS/WhatsApp to')} <strong>0745865323</strong> <em>(Brian Mokandu)</em></li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
+
+                    <div class="form-group" style="margin-top:12px">
                         <label>{Lang::T('Message')} ({Lang::T('Optional')})</label>
-                        <textarea class="form-control" id="recharge_message" rows="3" placeholder="{Lang::T('Add any special request or note')}"></textarea>
+                        <textarea class="form-control" id="recharge_message" rows="2" placeholder="{Lang::T('Add any special request or note')}"></textarea>
                     </div>
                     <div class="form-group">
                         <button type="button" class="btn btn-primary btn-block" id="submitRechargeBtn">{Lang::T('Send Request to Admin')}</button>
