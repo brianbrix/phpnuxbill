@@ -35,15 +35,17 @@ switch ($action) {
             r2(getUrl('recharge_requests/list'), 'e', Lang::T('Request not found'));
         }
         
-        // Get customer details
+        // Get customer details (may have been deleted)
         $customer = ORM::for_table('tbl_customers')->find_one($request['customer_id']);
-        
-        // Get plan details
+        $customer = $customer ? $customer->as_array() : ['id' => $request['customer_id'], 'username' => 'Deleted', 'fullname' => 'Deleted Customer'];
+
+        // Get plan details (may have been deleted)
         $plan = ORM::for_table('tbl_plans')->find_one($request['plan_id']);
-        
+        $plan = $plan ? $plan->as_array() : ['id' => $request['plan_id'], 'name_plan' => 'Deleted Plan', 'price' => 0];
+
         $ui->assign('request', $request->as_array());
-        $ui->assign('customer', $customer->as_array());
-        $ui->assign('plan', $plan->as_array());
+        $ui->assign('customer', $customer);
+        $ui->assign('plan', $plan);
         
         $ui->display('admin/recharge_requests/view.tpl');
         break;
