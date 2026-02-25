@@ -178,7 +178,7 @@
                             <a class="btn btn-primary pull-right btn-sm"
                                 href="{Text::url('home&recharge=', $_bill['id'], '&stoken=', App::getToken())}"
                                 onclick="return ask(this, '{Lang::T('Recharge')}?')">{Lang::T('Recharge')}</a>
-                            <a class="btn btn-info pull-right btn-sm" style="margin-right: 5px;" id="requestRechargeBtn_{$_bill['id']}" data-bill-id="{$_bill['id']}" data-plan-name="{$_bill['namebp']|escape:'html'}">
+                            <a class="btn btn-info pull-right btn-sm" style="margin-right: 5px;" id="requestRechargeBtn_{$_bill['id']}" data-bill-id="{$_bill['id']}" data-plan-name="{$_bill['namebp']|escape:'html'}" data-plan-price="{Lang::moneyFormat($_bill['price'])}">
                                 <i class="glyphicon glyphicon-plus"></i> {Lang::T('Request')}
                             </a>
                             <a class="btn btn-warning text-black pull-right btn-sm"
@@ -236,7 +236,7 @@
                                         <li>{Lang::T('Select')} <strong>&ldquo;Lipa na M-Pesa&rdquo;</strong></li>
                                         <li>{Lang::T('Select')} <strong>&ldquo;Pochi La Biashara&rdquo;</strong></li>
                                         <li>{Lang::T('Enter business number')}: <strong>0745865323</strong></li>
-                                        <li>{Lang::T('Enter the exact plan amount')}</li>
+                                        <li>{Lang::T('Enter amount')}: <strong><span id="recharge_plan_price_mpesa"></span></strong></li>
                                         <li>{Lang::T('Enter your M-Pesa PIN and confirm')}</li>
                                         <li>{Lang::T('You will receive an SMS with a transaction code')}</li>
                                         <li>{Lang::T('Send your username and that transaction code via SMS/WhatsApp to')} <strong>0745865323</strong> <em>(Brian Mokandu)</em></li>
@@ -258,7 +258,7 @@
                                         <li>{Lang::T('Select')} <strong>&ldquo;Send Money&rdquo;</strong></li>
                                         <li>{Lang::T('Select')} <strong>&ldquo;To Mobile Number&rdquo;</strong></li>
                                         <li>{Lang::T('Enter number')}: <strong>0734459479</strong></li>
-                                        <li>{Lang::T('Enter the exact plan amount')}</li>
+                                        <li>{Lang::T('Enter amount')}: <strong><span id="recharge_plan_price_airtel"></span></strong></li>
                                         <li>{Lang::T('Enter your Airtel PIN and confirm')}</li>
                                         <li>{Lang::T('You will receive an SMS with a transaction code')}</li>
                                         <li>{Lang::T('Send your username and that transaction code via SMS/WhatsApp to')} <strong>0745865323</strong> <em>(Brian Mokandu)</em></li>
@@ -304,6 +304,9 @@
                 
                 currentBillId = billId;
                 document.getElementById('recharge_plan_name').textContent = planName;
+                var planPrice = this.getAttribute('data-plan-price');
+                document.getElementById('recharge_plan_price_mpesa').textContent = planPrice;
+                document.getElementById('recharge_plan_price_airtel').textContent = planPrice;
                 document.getElementById('recharge_message').value = '';
                 
                 // Show modal

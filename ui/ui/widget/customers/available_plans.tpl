@@ -172,7 +172,7 @@
                                     <li>{Lang::T('Select')} <strong>&ldquo;Lipa na M-Pesa&rdquo;</strong></li>
                                     <li>{Lang::T('Select')} <strong>&ldquo;Pochi La Biashara&rdquo;</strong></li>
                                     <li>{Lang::T('Enter business number')}: <strong>0745865323</strong></li>
-                                    <li>{Lang::T('Enter the exact plan amount')}</li>
+                                    <li>{Lang::T('Enter amount')}: <strong><span class="new-plan-price-step"></span></strong></li>
                                     <li>{Lang::T('Enter your M-Pesa PIN and confirm')}</li>
                                     <li>{Lang::T('You will receive an SMS with a transaction code')}</li>
                                     <li>{Lang::T('Send your username and that transaction code via SMS/WhatsApp to')} <strong>0745865323</strong> <em>(Brian Mokandu)</em></li>
@@ -194,7 +194,7 @@
                                     <li>{Lang::T('Select')} <strong>&ldquo;Send Money&rdquo;</strong></li>
                                     <li>{Lang::T('Select')} <strong>&ldquo;To Mobile Number&rdquo;</strong></li>
                                     <li>{Lang::T('Enter number')}: <strong>0734459479</strong></li>
-                                    <li>{Lang::T('Enter the exact plan amount')}</li>
+                                    <li>{Lang::T('Enter amount')}: <strong><span class="new-plan-price-step"></span></strong></li>
                                     <li>{Lang::T('Enter your Airtel PIN and confirm')}</li>
                                     <li>{Lang::T('You will receive an SMS with a transaction code')}</li>
                                     <li>{Lang::T('Send your username and that transaction code via SMS/WhatsApp to')} <strong>0745865323</strong> <em>(Brian Mokandu)</em></li>
@@ -226,6 +226,7 @@ function requestNewPlan(planId, planName, planPrice) {
     _newPlanId = planId;
     document.getElementById('newPlanName').textContent = planName;
     document.getElementById('newPlanPrice').textContent = planPrice;
+    document.querySelectorAll('.new-plan-price-step').forEach(function(el){ el.textContent = planPrice; });
     document.getElementById('newPlanMessage').value = '';
     document.getElementById('newPlanResult').style.display = 'none';
     document.getElementById('sendNewPlanBtn').disabled = false;
