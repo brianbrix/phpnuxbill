@@ -585,12 +585,24 @@
                         <div class="form-container">
                             <form id="login-form" method="POST" action="{Text::url('login/post')}">
                                 <input type="hidden" name="csrf_token" value="{$csrf_token}">
-                                <div>
+                                <div style="margin-bottom: 15px;">
+                                    <label style="display: block; margin-bottom: 8px;">
+                                        {if $_c['registration_username'] == 'phone'}
+                                            {Lang::T('Phone Number')} <span style="color: red;">*</span>
+                                        {elseif $_c['registration_username'] == 'email'}
+                                            {Lang::T('Email')} <span style="color: red;">*</span>
+                                        {else}
+                                            {Lang::T('Username')} <span style="color: red;">*</span>
+                                        {/if}
+                                    </label>
                                     <input type="text" name="username"
-                                        placeholder="{if $_c['registration_username'] == 'phone'}{Lang::T('Phone Number')}{elseif $_c['registration_username'] == 'email'}{Lang::T('Email')}{else}{Lang::T('Usernames')}{/if}"
+                                        placeholder="{if $_c['registration_username'] == 'phone'}{Lang::T('Phone Number')}{elseif $_c['registration_username'] == 'email'}{Lang::T('Email')}{else}johndoe{/if}"
                                         required>
                                 </div>
-                                <div>
+                                <div style="margin-bottom: 15px;">
+                                    <label style="display: block; margin-bottom: 8px;">
+                                        {Lang::T('Password')} <span style="color: red;">*</span>
+                                    </label>
                                     <input type="password" name="password" placeholder="{Lang::T('Password')}" required>
                                 </div>
                                 <div class="checkbox clearfix">

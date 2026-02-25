@@ -13,17 +13,17 @@
     <form enctype="multipart/form-data" action="{Text::url('register/post')}" method="post">
         <div class="col-md-4">
             <div class="panel panel-primary">
-                <div class="panel-heading">1. {Lang::T('Register as Member')}</div>
+                <div class="panel-heading">1. {Lang::T('Register to Connect')}</div>
                 <div class="panel-body">
                     <div class="form-container">
                         <div class="form-group">
                             <label>
                                 {if $_c['registration_username'] == 'phone'}
-                                    {Lang::T('Phone Number')}
+                                    {Lang::T('Phone Number')} <span style="color: red;">*</span>
                                 {elseif $_c['registration_username'] == 'email'}
-                                    {Lang::T('Email')}
+                                    {Lang::T('Email')} <span style="color: red;">*</span>
                                 {else}
-                                    {Lang::T('Usernames')}
+                                    {Lang::T('Username')} <span style="color: red;">*</span>
                                 {/if}
                             </label>
                             <div class="input-group">
@@ -37,8 +37,8 @@
                                     <span class="input-group-addon" id="basic-addon1"><i
                                             class="glyphicon glyphicon-user"></i></span>
                                 {/if}
-                                <input type="text" class="form-control" name="username"
-                                    placeholder="{if $_c['country_code_phone']!= '' || $_c['registration_username'] == 'phone'}{$_c['country_code_phone']} {Lang::T('Phone Number')}{elseif $_c['registration_username'] == 'email'}{Lang::T('Email')}{else}{Lang::T('Usernames')}{/if}">
+                                <input type="text" class="form-control" name="username" required
+                                    placeholder="{if $_c['country_code_phone']!= '' || $_c['registration_username'] == 'phone'}{$_c['country_code_phone']} {Lang::T('Phone Number')}{elseif $_c['registration_username'] == 'email'}{Lang::T('Email')}{else}johndoe{/if}">
                             </div>
                         </div>
                         {if $_c['photo_register'] == 'yes'}
@@ -48,7 +48,7 @@
                             </div>
                         {/if}
                         <div class="form-group">
-                            <label>{Lang::T('Full Name')}</label>
+                            <label>{Lang::T('Full Name')} <span style="color: red;">*</span></label>
                             <input type="text" {if $_c['man_fields_fname'] neq 'no'}required{/if} class="form-control"
                                 id="fullname" value="{$fullname}" name="fullname">
                         </div>
@@ -73,11 +73,11 @@
                 <div class="panel-body">
                     <div class="form-container">
                         <div class="form-group">
-                            <label>{Lang::T('Password')}</label>
+                            <label>{Lang::T('Password')} <span style="color: red;">*</span></label>
                             <input type="password" required class="form-control" id="password" name="password">
                         </div>
                         <div class="form-group">
-                            <label>{Lang::T('Confirm Password')}</label>
+                            <label>{Lang::T('Confirm Password')} <span style="color: red;">*</span></label>
                             <input type="password" required class="form-control" id="cpassword" name="cpassword">
                         </div>
                         <br>

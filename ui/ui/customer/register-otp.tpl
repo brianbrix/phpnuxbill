@@ -13,12 +13,12 @@
     <form enctype="multipart/form-data" action="{Text::url('register/post')}" method="post">
         <div class="col-md-4">
             <div class="panel panel-primary">
-                <div class="panel-heading">1. {Lang::T('Register as Member')}</div>
+                <div class="panel-heading">1. {Lang::T('Register to Connect')}</div>
                 <div class="panel-body">
                     <div class="form-container">
                         <!-- Phone Number Field -->
                         <div class="form-group">
-                            <label>{Lang::T('Phone Number')}</label>
+                            <label>{Lang::T('Phone Number')} <span style="color: red;">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-addon" id="basic-addon1"><i
                                         class="glyphicon glyphicon-phone-alt"></i></span>
@@ -28,18 +28,18 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>{Lang::T('SMS Verification Code')}</label>
+                            <label>{Lang::T('SMS Verification Code')} <span style="color: red;">*</span></label>
                             <input type="text" required class="form-control" id="otp_code" value=""
                                 placeholder="{Lang::T('Verification Code')}" name="otp_code">
                         </div>
                         {if $_c['photo_register'] == 'yes'}
                             <div class="form-group">
-                                <label>{Lang::T('Photo')}</label>
+                                <label>{Lang::T('Photo')} <span style="color: red;">*</span></label>
                                 <input type="file" required class="form-control" id="photo" name="photo" accept="image/*">
                             </div>
                         {/if}
                         <div class="form-group">
-                            <label>{Lang::T('Full Name')}</label>
+                            <label>{Lang::T('Full Name')} <span style="color: red;">*</span></label>
                             <input type="text" {if $_c['man_fields_fname'] neq 'no'}required{/if} class="form-control"
                                 id="fullname" value="{$fullname}" name="fullname">
                         </div>
@@ -60,22 +60,22 @@
         </div>
         <div class="col-md-4">
             <div class="panel panel-primary">
-                <div class="panel-heading">2. {Lang::T('Usernames & Password')}</div>
+                <div class="panel-heading">2. {Lang::T('Username & Password')}</div>
                 <div class="panel-body">
                     <div class="form-container">
                         <!-- Username Field -->
                         <div class="form-group">
-                            <label>{Lang::T('Usernames')}</label>
+                            <label>{Lang::T('Username')} <span style="color: red;">*</span></label>
                             <input type="text" required class="form-control" id="username" name="username"
-                                placeholder="{Lang::T('Choose a Usernames')}">
+                                placeholder="johndoe">
                         </div>
                         <!-- Password Fields -->
                         <div class="form-group">
-                            <label>{Lang::T('Password')}</label>
+                            <label>{Lang::T('Password')} <span style="color: red;">*</span></label>
                             <input type="password" required class="form-control" id="password" name="password">
                         </div>
                         <div class="form-group">
-                            <label>{Lang::T('Confirm Password')}</label>
+                            <label>{Lang::T('Confirm Password')} <span style="color: red;">*</span></label>
                             <input type="password" required class="form-control" id="cpassword" name="cpassword">
                         </div>
                         <div class="btn-group btn-group-justified mb15">

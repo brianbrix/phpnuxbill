@@ -358,20 +358,24 @@
                                 <!-- Basic Information (Initially Visible) -->
                                 <div id="basicFields">
                                     <div class="form-group">
-                                        <input type="text" name="username"
-                                            placeholder="{if $_c['country_code_phone']!= '' || $_c['registration_username'] == 'phone'}{$_c['country_code_phone']} {Lang::T('Phone Number')}{elseif $_c['registration_username'] == 'email'}{Lang::T('Email')}{else}{Lang::T('Usernames')}{/if}">
+                                        <label>{Lang::T('Username')} <span style="color: red;">*</span></label>
+                                        <input type="text" name="username" required
+                                            placeholder="{if $_c['country_code_phone']!= '' || $_c['registration_username'] == 'phone'}{$_c['country_code_phone']} {Lang::T('Phone Number')}{elseif $_c['registration_username'] == 'email'}{Lang::T('Email')}{else}johndoe{/if}">
                                     </div>
                                     {if $_c['photo_register'] == 'yes'}
                                     <div class="form-group">
+                                        <label>{Lang::T('Photo')} <span style="color: red;">*</span></label>
                                         <input type="file" required id="photo" name="photo"
                                             accept="image/*">
                                     </div>
                                     {/if}
                                     <div class="form-group">
+                                        <label>{Lang::T('Full Name')} <span style="color: red;">*</span></label>
                                         <input type="text" name="fullname" placeholder="{Lang::T('Full Name')}"
                                         {if $_c['man_fields_fname'] neq 'no'}required{/if} >
                                     </div>
                                     <div class="form-group">
+                                        <label>{Lang::T('Email Address')}</label>
                                         <input type="email" name="email" placeholder="{Lang::T('Email Address')}">
                                     </div>
                                     <div class="form-group">
@@ -384,13 +388,16 @@
                                 <!-- Password Fields (Initially Hidden) -->
                                 <div id="passwordFields" style="display: none;">
                                     <div class="form-group">
+                                        <label>{Lang::T('Home Address')}</label>
                                         <input type="text" name="address" placeholder="{Lang::T('Home Address')}">
                                     </div>
                                     <div class="form-group">
+                                        <label>{Lang::T('Password')} <span style="color: red;">*</span></label>
                                         <input type="password" name="password" placeholder="{Lang::T('Password')}"
                                             required>
                                     </div>
                                     <div class="form-group">
+                                        <label>{Lang::T('Confirm Password')} <span style="color: red;">*</span></label>
                                         <input type="password" name="cpassword"
                                             placeholder="{Lang::T('Confirm Password')}" required>
                                     </div>
