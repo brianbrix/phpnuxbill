@@ -165,18 +165,28 @@ $(document).on('submit', '#rechargeRequestForm', function(e) {
     const billId = document.getElementById('recharge_bill_id').value;
     const message = $('[name="message"]').val();
     
+    // Get CSRF token from multiple possible sources
+    let csrfToken = $('[name="csrf_token"]').val() || 
+                    $('input[name="csrf_token"]').val() || 
+                    $('meta[name="csrf_token"]').attr('content') || '';
+    
     $.post('{Text::url('autoload_user/request_recharge')}', {
         bill_id: billId,
         message: message,
-        csrf_token: $('[name="csrf_token"]').val()
+        csrf_token: csrfToken
     }, function(resp) {
         if (resp.status === 'success') {
             alert('Recharge request sent successfully!');
             $('#rechargeRequestModal').modal('hide');
+            // Reload page to show updated requests
+            setTimeout(() => location.reload(), 1500);
         } else {
             alert('Error: ' + (resp.message || 'Failed to send request'));
         }
-    }, 'json');
+    }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
+        console.error('Request failed:', textStatus, errorThrown);
+        alert('Error sending request. Check browser console for details.');
+    });
 });
 
 // Add mobile-friendly styles
