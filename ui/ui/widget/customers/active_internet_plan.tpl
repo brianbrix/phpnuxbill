@@ -139,7 +139,7 @@
                             <a class="btn btn-primary pull-right btn-sm"
                                 href="{Text::url('home&recharge=', $_bill['id'], '&stoken=', App::getToken())}"
                                 onclick="return ask(this, '{Lang::T('Recharge')}?')">{Lang::T('Recharge')}</a>
-                            <a class="btn btn-info pull-right btn-sm" style="margin-right: 5px;" onclick="requestRecharge('{$_bill['id']}', '{$_bill['namebp']|escape:'html'}')">
+                            <a class="btn btn-info pull-right btn-sm" style="margin-right: 5px;" id="requestRechargeBtn_{$_bill['id']}" data-bill-id="{$_bill['id']}" data-plan-name="{$_bill['namebp']|escape:'html'}">
                                 <i class="glyphicon glyphicon-plus"></i> {Lang::T('Request')}
                             </a>
                             <a class="btn btn-warning text-black pull-right btn-sm"
@@ -171,79 +171,118 @@
         {/if}
     {/foreach}
 
-    <!-- Recharge Request Modal and JavaScript -->
-    <script>
-    // Global function to handle recharge requests
-    function requestRecharge(billId, planName) {
-        console.log('requestRecharge called with billId:', billId, 'planName:', planName);
-        const modal = document.getElementById('rechargeRequestModal') || createRechargeModal();
-        document.getElementById('recharge_bill_id').value = billId;
-        document.getElementById('recharge_plan_name').textContent = planName;
-        if (typeof jQuery !== 'undefined') {
-            jQuery(modal).modal('show');
-        } else {
-            modal.style.display = 'block';
-        }
-    }
-
-    function createRechargeModal() {
-        const modal = document.createElement('div');
-        modal.id = 'rechargeRequestModal';
-        modal.className = 'modal fade';
-        modal.innerHTML = `
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Request Plan Recharge</h4>
+    <!-- Recharge Request Modal HTML -->
+    <div id="rechargeRequestModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Request Plan Recharge</h4>
+                </div>
+                <div class="modal-body">
+                    <p>You are requesting a recharge for: <strong id="recharge_plan_name"></strong></p>
+                    <div class="form-group">
+                        <label>Request Message (Optional)</label>
+                        <textarea class="form-control" id="recharge_message" rows="3" placeholder="Add any special request or note..."></textarea>
                     </div>
-                    <div class="modal-body">
-                        <p>You are requesting a recharge for: <strong id="recharge_plan_name"></strong></p>
-                        <form id="rechargeRequestForm">
-                            <input type="hidden" id="recharge_bill_id" name="bill_id">
-                            <div class="form-group">
-                                <label>Request Message (Optional)</label>
-                                <textarea class="form-control" name="message" rows="3" placeholder="Add any special request or note..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary btn-block">Send Request to Admin</button>
-                            </div>
-                        </form>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary btn-block" id="submitRechargeBtn">Send Request to Admin</button>
                     </div>
                 </div>
             </div>
-        `;
-        document.body.appendChild(modal);
+        </div>
+    </div>
+
+    <!-- Recharge Request JavaScript -->
+    <script>
+    console.log('Recharge modal script loaded');
+    
+    // Store currently selected bill ID
+    var currentBillId = null;
+    
+    // Handle Request button clicks
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, setting up recharge request listeners');
         
-        // Handle form submission
-        jQuery(document).on('submit', '#rechargeRequestForm', function(e) {
-            e.preventDefault();
-            const billId = document.getElementById('recharge_bill_id').value;
-            const message = jQuery('[name="message"]').val();
-            
-            console.log('Submitting recharge request with billId:', billId, 'message:', message);
-            
-            jQuery.post('{Text::url('autoload_user/request_recharge')}', {
-                bill_id: billId,
-                message: message
-            }, function(resp) {
-                console.log('Response:', resp);
-                if (resp.status === 'success') {
-                    alert('Recharge request sent successfully!');
-                    jQuery('#rechargeRequestModal').modal('hide');
-                    jQuery('[name="message"]').val('');
-                    setTimeout(() => location.reload(), 1500);
+        // Find all request buttons and attach listeners
+        var requestBtns = document.querySelectorAll('[id^="requestRechargeBtn_"]');
+        console.log('Found ' + requestBtns.length + ' request buttons');
+        
+        requestBtns.forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                var billId = this.getAttribute('data-bill-id');
+                var planName = this.getAttribute('data-plan-name');
+                console.log('Request button clicked - billId:', billId, 'planName:', planName);
+                
+                currentBillId = billId;
+                document.getElementById('recharge_plan_name').textContent = planName;
+                document.getElementById('recharge_message').value = '';
+                
+                // Show modal
+                if (typeof jQuery !== 'undefined') {
+                    jQuery('#rechargeRequestModal').modal('show');
+                    console.log('Modal shown via jQuery');
                 } else {
-                    alert('Error: ' + (resp.message || 'Failed to send request'));
+                    console.warn('jQuery not available');
                 }
-            }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
-                console.error('AJAX Request failed:', textStatus, errorThrown);
-                console.error('Full response:', jqXHR.responseText);
-                alert('Error sending request. Check browser console for details.');
             });
         });
         
-        return modal;
-    }
+        // Handle submit button
+        document.getElementById('submitRechargeBtn').addEventListener('click', function() {
+            console.log('Submit button clicked, currentBillId:', currentBillId);
+            submitRechargeRequest();
+        });
+    });
+    
+    window.submitRechargeRequest = function() {
+        console.log('submitRechargeRequest called');
+        const billId = currentBillId;
+        const message = document.getElementById('recharge_message').value;
+        
+        console.log('Sending recharge request - billId:', billId, 'message:', message);
+        
+        if (!billId) {
+            alert('Bill ID is missing!');
+            console.error('No bill ID set');
+            return;
+        }
+        
+        document.getElementById('submitRechargeBtn').disabled = true;
+        
+        if (typeof jQuery !== 'undefined') {
+            console.log('Making AJAX POST to: {Text::url('autoload_user/request_recharge')}');
+            jQuery.ajax({
+                type: 'POST',
+                url: '{Text::url('autoload_user/request_recharge')}',
+                data: {
+                    bill_id: billId,
+                    message: message
+                },
+                dataType: 'json',
+                success: function(resp) {
+                    console.log('AJAX success, response:', resp);
+                    if (resp.status === 'success') {
+                        alert('Recharge request sent successfully!');
+                        jQuery('#rechargeRequestModal').modal('hide');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        alert('Error: ' + (resp.message || 'Failed to send request'));
+                        document.getElementById('submitRechargeBtn').disabled = false;
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX error - textStatus:', textStatus, 'errorThrown:', errorThrown);
+                    console.error('Response text:', jqXHR.responseText);
+                    alert('Error: ' + textStatus);
+                    document.getElementById('submitRechargeBtn').disabled = false;
+                }
+            });
+        } else {
+            alert('jQuery is not loaded!');
+            document.getElementById('submitRechargeBtn').disabled = false;
+        }
+    };
     </script>
 {/if}
