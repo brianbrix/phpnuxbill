@@ -127,7 +127,7 @@
                     </li>
                     {$_MENU_AFTER_CUSTOMERS}
                     {if !in_array($_admin['user_type'],['Report'])}
-                        <li class="{if $_routes[0] eq 'plan' || $_routes[0] eq 'coupons'}active{/if} treeview">
+                        <li class="{if $_routes[0] eq 'plan' || $_routes[0] eq 'coupons' || $_routes[0] eq 'recharge_requests'}active{/if} treeview">
                             <a href="#">
                                 <i class="fa fa-ticket"></i> <span>{Lang::T('Services')}</span>
                                 <span class="pull-right-container">
@@ -151,6 +151,8 @@
                                 {/if}
                                 <li {if $_routes[1] eq 'recharge' }class="active" {/if}><a
                                         href="{Text::url('plan/recharge')}">{Lang::T('Recharge Customer')}</a></li>
+                                <li {if $_routes[0] eq 'recharge_requests' }class="active" {/if}><a
+                                        href="{Text::url('recharge_requests')}">{Lang::T('Recharge Requests')}</a></li>
                                 {if $_c['enable_balance'] == 'yes'}
                                     <li {if $_routes[1] eq 'deposit' }class="active" {/if}><a
                                             href="{Text::url('plan/deposit')}">{Lang::T('Refill Balance')}</a></li>

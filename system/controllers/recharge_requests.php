@@ -85,7 +85,7 @@ switch ($action) {
         
     case 'reject':
         $id = $routes['2'];
-        $reason = _post('reason', '');
+        $reason = _post('reason', _get('reason', ''));
         
         $request = ORM::for_table('tbl_recharge_requests')->find_one($id);
         
