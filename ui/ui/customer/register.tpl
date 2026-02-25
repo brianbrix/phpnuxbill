@@ -54,12 +54,12 @@
                         </div>
                         <div class="form-group">
                             <label>{Lang::T('Email')}</label>
-                            <input type="text" {if $_c['man_fields_email'] neq 'no'}required{/if} class="form-control"
+                            <input type="email" class="form-control"
                                 id="email" placeholder="xxxxxxx@xxxx.xx" value="{$email}" name="email">
                         </div>
                         <div class="form-group">
                             <label>{Lang::T('Home Address')}</label>
-                            <input type="text" {if $_c['man_fields_address'] neq 'no'}required{/if} name="address"
+                            <input type="text" name="address"
                                 id="address" value="{$address}" class="form-control">
                         </div>
                         {$customFields}
@@ -81,13 +81,15 @@
                             <input type="password" required class="form-control" id="cpassword" name="cpassword">
                         </div>
                         <br>
-                        <div class="btn-group btn-group-justified mb15">
-                            <div class="btn-group">
-                                <a href="{Text::url('login')}" class="btn btn-warning">{Lang::T('Cancel')}</a>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn btn-success" type="submit">{Lang::T('Register')}</button>
-                            </div>
+                        <div class="form-group">
+                            <button class="btn btn-success btn-block" type="submit" style="padding: 12px; font-weight: bold; font-size: 16px;">
+                                <i class="glyphicon glyphicon-ok"></i> {Lang::T('Register')}
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <a href="{Text::url('login')}" class="btn btn-warning btn-block" style="padding: 12px; font-weight: bold; font-size: 16px;">
+                                <i class="glyphicon glyphicon-arrow-left"></i> {Lang::T('Back to Login')}
+                            </a>
                         </div>
                         <br>
                         <center>

@@ -45,6 +45,8 @@ switch ($do) {
             if (!Validator::Email($email)) {
                 $msg .= 'Email is not Valid<br>';
             }
+        } else if (!empty($email) && !Validator::Email($email)) {
+            $msg .= 'Email is not Valid<br>';
         }
         if ($password != $cpassword) {
             $msg .= Lang::T('Passwords does not match') . '<br>';

@@ -1,6 +1,43 @@
 {include file="customer/header.tpl"}
 <!-- user-activation-list -->
 
+<style>
+    @media (max-width: 768px) {
+        .table {
+            font-size: 12px;
+        }
+        
+        .table th, .table td {
+            padding: 8px 6px;
+        }
+        
+        .table th {
+            font-size: 11px;
+        }
+        
+        .table-responsive {
+            border: none;
+            -webkit-overflow-scrolling: touch;
+            -ms-overflow-style: -ms-autohiding-scrollbar;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .table {
+            font-size: 11px;
+        }
+        
+        .table th, .table td {
+            padding: 6px 4px;
+        }
+        
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+    }
+</style>
+
 <div class="row">
     <div class="col-sm-12">
         <div class="panel mb20 panel-hovered panel-primary">

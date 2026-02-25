@@ -372,8 +372,7 @@
                                         {if $_c['man_fields_fname'] neq 'no'}required{/if} >
                                     </div>
                                     <div class="form-group">
-                                        <input type="email" name="email" placeholder="{Lang::T('Email Address')}"
-                                        {if $_c['man_fields_email'] neq 'no'}required{/if}>
+                                        <input type="email" name="email" placeholder="{Lang::T('Email Address')}">
                                     </div>
                                     <div class="form-group">
                                         <button type="button" onclick="toggleFields()" class="submit-btn">
@@ -385,8 +384,7 @@
                                 <!-- Password Fields (Initially Hidden) -->
                                 <div id="passwordFields" style="display: none;">
                                     <div class="form-group">
-                                        <input type="text" name="address" placeholder="{Lang::T('Home Address')}"
-                                        {if $_c['man_fields_address'] neq 'no'}required{/if}>
+                                        <input type="text" name="address" placeholder="{Lang::T('Home Address')}">
                                     </div>
                                     <div class="form-group">
                                         <input type="password" name="password" placeholder="{Lang::T('Password')}"

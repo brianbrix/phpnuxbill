@@ -54,25 +54,19 @@
                         </div>
                     </div>
 
-                    <div class="clearfix hidden">
-                        <div class="{$app_url}/ui-checkbox ui-checkbox-primary right">
-                            <label>
-                                <input type="checkbox">
-                                <span>Remember me</span>
-                            </label>
-                        </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block" style="margin-bottom: 10px; padding: 12px 20px; font-weight: bold; font-size: 16px;">
+                            <i class="glyphicon glyphicon-log-in"></i> {Lang::T('Login')}
+                        </button>
                     </div>
-                    <div class="btn-group btn-group-justified mb15">
-                        {if $_c['disable_registration'] != 'noreg'}
-                            <div class="btn-group">
-                                <a href="{Text::url('register')}" class="btn btn-success">{Lang::T('Register')}</a>
-                            </div>
-                        {/if}
-                        <div class="btn-group">
-                            <button type="submit" class="btn btn-primary">{Lang::T('Login')}</button>
+                    {if $_c['disable_registration'] != 'noreg'}
+                        <div class="form-group">
+                            <a href="{Text::url('register')}" class="btn btn-success btn-block" style="padding: 12px 20px; font-weight: bold; font-size: 16px;">
+                                <i class="glyphicon glyphicon-user"></i> {Lang::T('Create Account')}
+                            </a>
                         </div>
-                    </div>
-                    <br>
+                    {/if}
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
                     <center>
                         <a href="{Text::url('forgot')}" class="btn btn-link">{Lang::T('Forgot Password')}</a>
                         <br>

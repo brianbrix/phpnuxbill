@@ -45,12 +45,12 @@
                         </div>
                         <div class="form-group">
                             <label>{Lang::T('Email')}</label>
-                            <input type="text" class="form-control" {if $_c['man_fields_email'] neq 'no'}required{/if}
+                            <input type="email" class="form-control"
                                 placeholder="xxxxxx@xxx.xx" id="email" value="{$email}" name="email">
                         </div>
                         <div class="form-group">
                             <label>{Lang::T('Home Address')}</label>
-                            <input type="text" name="address" {if $_c['man_fields_address'] neq 'no'}required{/if}
+                            <input type="text" name="address"
                                 id="address" value="{$address}" class="form-control">
                         </div>
                         {$customFields}
