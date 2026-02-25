@@ -197,14 +197,11 @@ class Radius
 
     function online_customer($customer, $router_name)
     {
-        // A customer is considered online if:
-        // 1. There's an open accounting session (acctstoptime IS NULL), AND
-        // 2. The session had a recent interim-update (within 10 minutes),
-        //    which avoids false "online" from stale/hanging sessions.
-        // Falls back to acctstoptime-only if acctupdatetime is not populated.
+        // FreeRADIUS stores acctstoptime as NULL OR '0000-00-00 00:00:00' for open sessions.
+        // We must handle both cases to correctly detect active sessions.
         $acct = ORM::for_table('radacct', 'radius')
             ->where('username', $customer['username'])
-            ->where_null('acctstoptime')
+            ->where_raw('(acctstoptime IS NULL OR acctstoptime = \'0000-00-00 00:00:00\')')
             ->order_by_desc('acctstarttime')
             ->find_one();
 
@@ -212,14 +209,18 @@ class Radius
             return false;
         }
 
-        // If FreeRADIUS sends interim updates, acctupdatetime will be set.
+        // If FreeRADIUS sends interim updates, acctupdatetime will be populated.
         // Treat session as live only if updated in the last 10 minutes.
-        if (!empty($acct['acctupdatetime']) && $acct['acctupdatetime'] !== '0000-00-00 00:00:00') {
+        if (
+            !empty($acct['acctupdatetime']) &&
+            $acct['acctupdatetime'] !== '0000-00-00 00:00:00' &&
+            $acct['acctupdatetime'] !== null
+        ) {
             $lastUpdate = strtotime($acct['acctupdatetime']);
             return (time() - $lastUpdate) < 600; // 600 seconds = 10 minutes
         }
 
-        // No interim updates configured — fall back to open session check only
+        // No interim updates configured — open session is enough to confirm online
         return true;
     }
 
