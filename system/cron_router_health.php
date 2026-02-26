@@ -9,6 +9,8 @@
 // Load system bootstrap
 require_once dirname(__FILE__) . '/../init.php';
 
+echo "[" . date('Y-m-d H:i:s') . "] Router health check started\n";
+
 $health_table = 'tbl_server_health';
 $offline_table = 'tbl_offline_periods';
 
@@ -28,9 +30,11 @@ if (!$health) {
 
 // Check router status from database
 $router_is_online = checkRouterStatus();
+echo "[" . date('Y-m-d H:i:s') . "] Router status: " . ($router_is_online ? 'ONLINE' : 'OFFLINE') . "\n";
 
 $current_status = $health['is_online'];
 $status_changed = ($current_status != $router_is_online);
+echo "[" . date('Y-m-d H:i:s') . "] Status changed: " . ($status_changed ? 'YES' : 'NO') . "\n";
 
 if ($router_is_online) {
     // Router is online
@@ -119,6 +123,8 @@ if ($router_is_online) {
 
 $health->last_check = date('Y-m-d H:i:s');
 $health->save();
+
+echo "[" . date('Y-m-d H:i:s') . "] Router health check completed\n";
 
 /**
  * Check router status from tbl_routers table
@@ -234,7 +240,7 @@ function extendPlansForOfflineperiod($offline_id, $duration_minutes) {
         Message::addToInbox(
             $plan['customer_id'],
             'Plan Extended - Router Downtime',
-            'Your plan "' . $plan['plan_name'] . '" has been automatically extended by ' . $duration_minutes . ' minutes due to router downtime.' .
+            'Your plan "' . $plan['namebp'] . '" has been automatically extended by ' . $duration_minutes . ' minutes due to router downtime.' .
             "\n\nOld expiration: " . $old_expiration .
             "\nNew expiration: " . $new_expiration .
             "\n\nWe apologize for the inconvenience."

@@ -150,7 +150,7 @@ switch ($action) {
             $recharge = ORM::for_table('tbl_user_recharges')->find_one($ext['recharge_id']);
             $affected[] = [
                 'username' => $user ? $user['username'] : 'Unknown',
-                'plan_name' => $recharge ? $recharge['plan_name'] : 'Unknown',
+                'plan_name' => $recharge ? $recharge['namebp'] : 'Unknown',
                 'old_expiration' => $ext['old_expiration'],
                 'new_expiration' => $ext['new_expiration'],
                 'extension_minutes' => $ext['extension_minutes'],
@@ -192,6 +192,9 @@ switch ($action) {
         if (_post('extend_selected')) {
             // Process manual extension for selected customers
             $selected_customers = _post('selected_customers');
+            
+            // Debug logging
+            _log('Manual extend form submitted. Selected: ' . json_encode($selected_customers), 'Debug', 0);
             
             if (empty($selected_customers) || !is_array($selected_customers)) {
                 r2(getUrl('server_uptime/manual-extend/' . $offline_id), 'e', 'No customers selected');
@@ -253,7 +256,7 @@ switch ($action) {
                 Message::addToInbox(
                     $recharge['customer_id'],
                     'Plan Extended - Router Downtime',
-                    'Your plan "' . $recharge['plan_name'] . '" has been extended by ' . $duration_minutes . ' minutes due to router downtime.' .
+                    'Your plan "' . $recharge['namebp'] . '" has been extended by ' . $duration_minutes . ' minutes due to router downtime.' .
                     "\n\nOld expiration: " . $old_expiration .
                     "\nNew expiration: " . $new_expiration .
                     "\n\nWe apologize for the inconvenience."
@@ -304,7 +307,7 @@ switch ($action) {
                 'customer_id' => $plan['customer_id'],
                 'username' => $customer['username'],
                 'fullname' => $customer['fullname'],
-                'plan_name' => $plan['plan_name'],
+                'plan_name' => $plan['namebp'],
                 'expiration_date' => $expiration_full,
                 'already_extended' => $already_extended ? true : false
             ];
