@@ -2,8 +2,15 @@
 
 <div class="row">
     <div class="col-sm-12">
-        <!-- Age Warning if too old -->
-        {if $is_too_old}
+        <!-- Server Still Offline Warning -->
+        {if $is_still_offline}
+            <div class="alert alert-danger">
+                <h4><i class="fa fa-warning"></i> Server is Still Offline</h4>
+                <p>This offline period has not ended yet (no recovery timestamp recorded).</p>
+                <p>You can only extend customer plans AFTER the server comes back online. Please wait for the server to recover.</p>
+            </div>
+        {elseif $is_too_old}
+            <!-- Period has ended but is too old -->
             <div class="alert alert-danger">
                 <h4><i class="fa fa-ban"></i> This offline period is too old for extensions</h4>
                 <p>This period occurred <strong>{$period_age_days}</strong> days ago, which exceeds the maximum allowed age of <strong>{$max_days}</strong> days.</p>

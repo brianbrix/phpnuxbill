@@ -78,11 +78,19 @@ switch ($action) {
         foreach ($offline_periods as $period) {
             $period_data = $period->as_array();
             
+            // Check if period is still ongoing (no came_online yet)
+            $is_still_offline = empty($period_data['came_online']);
+            
             // Calculate age in days
             $period_timestamp = strtotime($period_data['went_offline']);
             $period_age_days = (time() - $period_timestamp) / 86400;
             $period_data['age_days'] = round($period_age_days, 1);
-            $period_data['is_too_old'] = $period_timestamp < $max_age_timestamp;
+            
+            // Period is ineligible if:
+            // 1. Server is still offline (came_online is empty)
+            // 2. OR period is too old (older than max_days)
+            $period_data['is_too_old'] = $is_still_offline || ($period_timestamp < $max_age_timestamp);
+            $period_data['is_still_offline'] = $is_still_offline;
             
             $periods[] = $period_data;
         }
@@ -115,13 +123,19 @@ switch ($action) {
             r2(getUrl('server_uptime'), 'e', Lang::T('Offline period not found'));
         }
         
-        // Check if period is too old for extensions
+        // Check if period is eligible for extensions
         $max_days = $config['max_offline_extension_days'] ?? 7;
         $period_age_days = (time() - strtotime($period['went_offline'])) / 86400;
-        $is_too_old = $period_age_days > $max_days;
+        
+        // Period is ineligible if:
+        // 1. Server is still offline (came_online is empty) - can't extend until server is back
+        // 2. OR period is too old (older than max_days)
+        $is_still_offline = empty($period['came_online']);
+        $is_too_old = $is_still_offline || ($period_age_days > $max_days);
         
         $ui->assign('period', $period->as_array());
         $ui->assign('is_too_old', $is_too_old);
+        $ui->assign('is_still_offline', $is_still_offline);
         $ui->assign('max_days', $max_days);
         $ui->assign('period_age_days', round($period_age_days, 1));
         
@@ -160,6 +174,11 @@ switch ($action) {
         $period = ORM::for_table('tbl_offline_periods')->find_one($offline_id);
         if (!$period) {
             r2(getUrl('server_uptime'), 'e', 'Offline period not found');
+        }
+        
+        // Check if period is still ongoing
+        if (empty($period['came_online'])) {
+            r2(getUrl('server_uptime/offline-period/' . $offline_id), 'e', 'Server is still offline. Cannot extend plans while server is down.');
         }
         
         // Check if period is too old

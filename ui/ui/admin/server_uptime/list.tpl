@@ -120,7 +120,11 @@
                                             <span class="badge badge-info">{$period.plans_extended}</span>
                                         </td>
                                         <td>
-                                            {if $period.is_too_old}
+                                            {if $period.is_still_offline}
+                                                <span class="label label-danger">
+                                                    <i class="fa fa-warning"></i> Still Offline
+                                                </span>
+                                            {elseif $period.is_too_old}
                                                 <span class="label label-danger">
                                                     <i class="fa fa-ban"></i> Too Old
                                                 </span>
