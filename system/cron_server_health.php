@@ -19,14 +19,32 @@ require_once dirname(__FILE__) . '/../init.php';
 
 fwrite(STDERR, "[DEBUG] Bootstrap loaded successfully\n");
 
-// Get server configuration from database
-$nas = ORM::for_table('nas')->find_one();
-$radius_server = $nas['nasname'] ?? 'localhost';
-$radius_port = $nas['ports'] ?? 1812;
+// Get server configuration from tbl_routers (NAS/routers table)
+$router = ORM::for_table('tbl_routers')
+    ->where('enabled', 1)
+    ->order_by_desc('last_seen')
+    ->find_one();
+
+if ($router) {
+    // Extract IP from ip_address (may include port like "10.200.200.2:8729")
+    $ip_address = $router['ip_address'];
+    $router_status = $router['status'] ?? 'Unknown';
+    if (strpos($ip_address, ':') !== false) {
+        list($radius_server, $radius_port) = explode(':', $ip_address);
+        $radius_port = (int)$radius_port;
+    } else {
+        $radius_server = $ip_address;
+        $radius_port = 1812; // Default RADIUS port
+    }
+    fwrite(STDERR, "[DEBUG] Using router: {$router['name']} -> $radius_server:$radius_port (status: $router_status) (from tbl_routers)\n");
+} else {
+    $radius_server = 'localhost';
+    $radius_port = 1812;
+    fwrite(STDERR, "[DEBUG] No enabled router found, using default: $radius_server:$radius_port\n");
+}
+
 $health_table = 'tbl_server_health';
 $offline_table = 'tbl_offline_periods';
-
-fwrite(STDERR, "[DEBUG] Using server: $radius_server:$radius_port (from NAS table)\n");
 
 // Helper function to log with timestamp
 function logWithTimestamp($message, $type = 'Server', $userid = 0) {
