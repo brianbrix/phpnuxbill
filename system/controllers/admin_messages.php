@@ -17,7 +17,7 @@ switch ($action) {
     case 'list':
     default:
         // Get filter from query string
-        $filter = _post('filter', 'unread');
+        $filter = _get('filter', 'unread');
         $ui->assign('filter', $filter);
         
         // Build query
