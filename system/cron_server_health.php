@@ -122,7 +122,18 @@ function checkRadiusServer($host, $port, &$response_time) {
     
     // Try multiple check methods
     
-    // Method 1: Check FreeRADIUS status endpoint (if available)
+    // Method 1: Ping the host (most reliable for basic connectivity)
+    $ping_cmd = PHP_OS_FAMILY === 'Windows' 
+        ? "ping -n 1 -w 3000 " . escapeshellarg($host) 
+        : "ping -c 1 -W 3 " . escapeshellarg($host) . " 2>/dev/null";
+    
+    $output = shell_exec($ping_cmd);
+    if ($output !== null && (strpos($output, 'received') !== false || strpos($output, 'Received') !== false || strpos($output, 'bytes from') !== false || strpos($output, 'ttl') !== false)) {
+        $response_time = round((microtime(true) - $start) * 1000);
+        return true;
+    }
+    
+    // Method 2: Try socket connection to RADIUS port
     if (function_exists('fsockopen')) {
         $connection = @fsockopen($host, $port, $errno, $errstr, 3);
         if ($connection) {
@@ -132,21 +143,10 @@ function checkRadiusServer($host, $port, &$response_time) {
         }
     }
     
-    // Method 2: Check via Mikrotik API if available
+    // Method 3: Check via database - recent radius accounting entries
     global $_c;
-    if (!empty($_c['mikrotik_username']) && !empty($_c['mikrotik_ip'])) {
-        try {
-            // Attempt to query radacct table via ORM (tests DB connectivity to radius data)
-            $count = ORM::for_table('radacct')->limit(1)->count();
-            $response_time = round((microtime(true) - $start) * 1000);
-            return true;
-        } catch (Exception $e) {
-            // Database check failed
-        }
-    }
-    
-    // Method 3: Fallback - check if any recent radius accounting entries exist
     try {
+        // Attempt to query radacct table via ORM (tests DB connectivity to radius data)
         $recent = ORM::for_table('radacct')
             ->where_gte('acctstarttime', date('Y-m-d H:i:s', strtotime('-5 minutes')))
             ->count();
@@ -156,6 +156,7 @@ function checkRadiusServer($host, $port, &$response_time) {
             return true; // Server is active if we're getting recent records
         }
     } catch (Exception $e) {
+        // Database check failed
     }
     
     $response_time = round((microtime(true) - $start) * 1000);
