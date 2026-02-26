@@ -343,6 +343,8 @@
                                 <li {if $_routes[1] eq 'dbstatus' }class="active" {/if}><a
                                         href="{Text::url('settings/dbstatus')}">{Lang::T('Backup/Restore')}</a></li>
                                 <li><a href="{Text::url('settings/clearcache')}" onclick="return confirm('Clear all template cache?')"><i class="glyphicon glyphicon-refresh"></i> {Lang::T('Clear Cache')}</a></li>
+                                <li {if $_routes[0] eq 'server_uptime' }class="active" {/if}><a
+                                        href="{Text::url('server_uptime')}"><i class="fa fa-signal"></i> {Lang::T('Server Status & Uptime')}</a></li>
                                 <li {if $_system_menu eq 'paymentgateway' }class="active" {/if}>
                                     <a href="{Text::url('paymentgateway')}">
                                         <span class="text">{Lang::T('Payment Gateway')}</span>
