@@ -15,6 +15,12 @@ $radius_port = $_c['nas_port'] ?? 1812;
 $health_table = 'tbl_server_health';
 $offline_table = 'tbl_offline_periods';
 
+// Helper function to log with timestamp
+function logWithTimestamp($message, $type = 'Server', $userid = 0) {
+    $timestamp = date('Y-m-d H:i:s');
+    _log("[$timestamp] $message", $type, $userid);
+}
+
 // Get current health status
 $health = ORM::for_table($health_table)
     ->where('server_name', 'FreeRADIUS')
@@ -39,7 +45,7 @@ if ($server_is_online) {
     // Server is online
     if ($status_changed) {
         // Server came back online - was offline, now online
-        _log('FreeRADIUS Server came back online', 'Server', 0);
+        logWithTimestamp('FreeRADIUS Server came back online', 'Server', 0);
         
         // Record the offline period
         $offline_record = ORM::for_table($offline_table)
@@ -63,7 +69,7 @@ if ($server_is_online) {
                 // Queue plan extensions
                 extendPlansForOfflineperiod($offline_record['id'], $duration_minutes);
             } else {
-                _log('Server recovered but auto-extension is disabled. Manual extension required.', 'Server', 0);
+                logWithTimestamp('Server recovered but auto-extension is disabled. Manual extension required.', 'Server', 0);
             }
         }
         
@@ -78,6 +84,9 @@ if ($server_is_online) {
         $health->consecutive_failures = 0;
         $health->response_time_ms = $response_time;
         $health->save();
+        
+        // Log successful check with timestamp
+        logWithTimestamp("FreeRADIUS Server health check passed (response time: {$response_time}ms)", 'Server', 0);
     }
     
 } else {
@@ -89,7 +98,7 @@ if ($server_is_online) {
     $offline_threshold = 3;
     if ($health->consecutive_failures >= $offline_threshold && $current_status != 0) {
         // Just went offline after threshold reached
-        _log('FreeRADIUS Server went offline after ' . $health->consecutive_failures . ' failed checks', 'Server', 0);
+        logWithTimestamp('FreeRADIUS Server went offline after ' . $health->consecutive_failures . ' failed checks', 'Server', 0);
         
         // Create new offline period record
         $offline = ORM::for_table($offline_table)->create();
