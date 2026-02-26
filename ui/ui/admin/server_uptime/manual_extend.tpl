@@ -122,6 +122,9 @@ function updateSelectedCount() {
 
 function confirmExtension() {
     var checked = document.querySelectorAll('.customer-checkbox:checked');
+    console.log('Checkboxes checked:', checked.length);
+    console.log('Checked values:', Array.from(checked).map(cb => cb.value));
+    
     if (checked.length == 0) {
         alert('Please select at least one customer to extend.');
         return false;
@@ -130,7 +133,19 @@ function confirmExtension() {
     var duration = {$period['duration_minutes']};
     var hours = (duration / 60).toFixed(1);
     
-    return confirm('Are you sure you want to extend ' + checked.length + ' customer(s) by ' + duration + ' minutes (' + hours + ' hours)?\n\nThis action cannot be undone.');
+    var confirmed = confirm('Are you sure you want to extend ' + checked.length + ' customer(s) by ' + duration + ' minutes (' + hours + ' hours)?\n\nThis action cannot be undone.');
+    
+    if (confirmed) {
+        console.log('Form will submit with', checked.length, 'customers');
+        // Log form data
+        var formData = new FormData(document.getElementById('extendForm'));
+        console.log('FormData contents:');
+        for (var pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+    }
+    
+    return confirmed;
 }
 
 // Initialize count on page load

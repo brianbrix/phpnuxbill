@@ -191,10 +191,13 @@ switch ($action) {
         
         if (_post('extend_selected')) {
             // Process manual extension for selected customers
+            _log('Form submitted. Raw POST data: ' . json_encode($_POST), 'Debug', 0);
+            
             $selected_customers = _post('selected_customers');
             
             // Debug logging
             _log('Manual extend form submitted. Selected: ' . json_encode($selected_customers), 'Debug', 0);
+            _log('Selected type: ' . gettype($selected_customers) . ', empty: ' . (empty($selected_customers) ? 'true' : 'false'), 'Debug', 0);
             
             if (empty($selected_customers) || !is_array($selected_customers)) {
                 r2(getUrl('server_uptime/manual-extend/' . $offline_id), 'e', 'No customers selected');
