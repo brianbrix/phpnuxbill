@@ -19,13 +19,14 @@ require_once dirname(__FILE__) . '/../init.php';
 
 fwrite(STDERR, "[DEBUG] Bootstrap loaded successfully\n");
 
-// Get server configuration
-$radius_server = $_c['nas_ip'] ?? 'localhost';
-$radius_port = $_c['nas_port'] ?? 1812;
+// Get server configuration from database
+$nas = ORM::for_table('nas')->find_one();
+$radius_server = $nas['nasname'] ?? 'localhost';
+$radius_port = $nas['ports'] ?? 1812;
 $health_table = 'tbl_server_health';
 $offline_table = 'tbl_offline_periods';
 
-fwrite(STDERR, "[DEBUG] Using server: $radius_server:$radius_port\n");
+fwrite(STDERR, "[DEBUG] Using server: $radius_server:$radius_port (from NAS table)\n");
 
 // Helper function to log with timestamp
 function logWithTimestamp($message, $type = 'Server', $userid = 0) {
