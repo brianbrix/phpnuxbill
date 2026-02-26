@@ -6,14 +6,26 @@
  * Run every 5-10 minutes via cron
  */
 
+// Enable error logging for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Write to stderr immediately for debugging
+fwrite(STDERR, "[DEBUG] Cron starting at " . date('Y-m-d H:i:s') . "\n");
+
 // Load system bootstrap
 require_once dirname(__FILE__) . '/../init.php';
+
+fwrite(STDERR, "[DEBUG] Bootstrap loaded successfully\n");
 
 // Get server configuration
 $radius_server = $_c['nas_ip'] ?? 'localhost';
 $radius_port = $_c['nas_port'] ?? 1812;
 $health_table = 'tbl_server_health';
 $offline_table = 'tbl_offline_periods';
+
+fwrite(STDERR, "[DEBUG] Using server: $radius_server:$radius_port\n");
 
 // Helper function to log with timestamp
 function logWithTimestamp($message, $type = 'Server', $userid = 0) {
@@ -268,3 +280,5 @@ function extendPlansForOfflineperiod($offline_id, $duration_minutes) {
         );
     }
 }
+
+fwrite(STDERR, "[DEBUG] Cron completed successfully at " . date('Y-m-d H:i:s') . "\n");
