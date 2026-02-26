@@ -86,7 +86,7 @@
                     <div class="alert alert-warning" style="margin-top: 20px;">
                         <h4><i class="fa fa-exclamation-triangle"></i> Important Notes:</h4>
                         <ul>
-                            <li>Customers marked with green background have already been extended for this offline period and cannot be selected again.</li>
+                            <li>Customers marked with green background have already been extended for this router offline period and cannot be selected again.</li>
                             <li>Only active plans will be extended.</li>
                             <li>Each customer will receive an inbox notification about the extension.</li>
                             <li>The extension will be logged in the system for audit purposes.</li>

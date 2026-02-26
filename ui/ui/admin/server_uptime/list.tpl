@@ -10,7 +10,7 @@
                         <i class="fa {if $health.is_online}fa-signal{else}fa-warning{/if}"></i>
                     </span>
                     <div class="info-box-content">
-                        <span class="info-box-text">Server Status</span>
+                        <span class="info-box-text">Router Status</span>
                         <span class="info-box-number">
                             {if $health.is_online}
                                 <span style="color: #00a65a;">🟢 ONLINE</span>

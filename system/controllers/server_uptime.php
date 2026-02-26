@@ -6,7 +6,7 @@
  */
 
 _admin();
-$ui->assign('_title', Lang::T('Server Status & Uptime'));
+$ui->assign('_title', Lang::T('Router Status & Uptime'));
 $ui->assign('_system_menu', 'server_uptime');
 
 $action = $routes['1'];
@@ -53,9 +53,9 @@ switch ($action) {
         
     case 'list':
     default:
-        // Get current server health status
+        // Get current router health status
         $health = ORM::for_table('tbl_server_health')
-            ->where('server_name', 'FreeRADIUS')
+            ->where('server_name', 'Router')
             ->find_one();
         
         $ui->assign('health', $health ? $health->as_array() : [
@@ -178,7 +178,7 @@ switch ($action) {
         
         // Check if period is still ongoing
         if (empty($period['came_online'])) {
-            r2(getUrl('server_uptime/offline-period/' . $offline_id), 'e', 'Server is still offline. Cannot extend plans while server is down.');
+            r2(getUrl('server_uptime/offline-period/' . $offline_id), 'e', 'Router is still offline. Cannot extend plans while router is down.');
         }
         
         // Check if period is too old
@@ -247,13 +247,13 @@ switch ($action) {
                 $extended_count++;
                 
                 // Log
-                _log('Plan manually extended by ' . $duration_minutes . ' minutes for offline period #' . $offline_id, 'ManualExtension', $recharge['customer_id']);
+                _log('Plan manually extended by ' . $duration_minutes . ' minutes for router offline period #' . $offline_id, 'ManualExtension', $recharge['customer_id']);
                 
                 // Notify customer
                 Message::addToInbox(
                     $recharge['customer_id'],
-                    'Plan Extended - Server Downtime',
-                    'Your plan "' . $recharge['plan_name'] . '" has been extended by ' . $duration_minutes . ' minutes due to server downtime.' .
+                    'Plan Extended - Router Downtime',
+                    'Your plan "' . $recharge['plan_name'] . '" has been extended by ' . $duration_minutes . ' minutes due to router downtime.' .
                     "\n\nOld expiration: " . $old_expiration .
                     "\nNew expiration: " . $new_expiration .
                     "\n\nWe apologize for the inconvenience."

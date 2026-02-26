@@ -5,9 +5,9 @@
         <!-- Server Still Offline Warning -->
         {if $is_still_offline}
             <div class="alert alert-danger">
-                <h4><i class="fa fa-warning"></i> Server is Still Offline</h4>
+                <h4><i class="fa fa-warning"></i> Router is Still Offline</h4>
                 <p>This offline period has not ended yet (no recovery timestamp recorded).</p>
-                <p>You can only extend customer plans AFTER the server comes back online. Please wait for the server to recover.</p>
+                <p>You can only extend customer plans AFTER the router comes back online. Please wait for the router to recover.</p>
             </div>
         {elseif $is_too_old}
             <!-- Period has ended but is too old -->

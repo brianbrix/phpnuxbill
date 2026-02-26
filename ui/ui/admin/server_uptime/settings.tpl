@@ -5,7 +5,7 @@
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    <i class="fa fa-cog"></i> Server Uptime & Extension Settings
+                    <i class="fa fa-cog"></i> Router Uptime & Extension Settings
                 </h3>
                 <div class="btn-group pull-right">
                     <a href="{Text::url('server_uptime')}" class="btn btn-default btn-xs">
@@ -20,13 +20,13 @@
                     <div class="form-group">
                         <label class="col-sm-3 control-label">
                             <strong>Auto-Extend on Recovery</strong>
-                            <br><small class="text-muted">Automatically extend plans when server comes back online</small>
+                            <br><small class="text-muted">Automatically extend plans when router comes back online</small>
                         </label>
                         <div class="col-sm-9">
                             <div class="radio">
                                 <label>
                                     <input type="radio" name="auto_extend_on_recovery" value="yes" {if $auto_extend == 'yes'}checked{/if}>
-                                    <strong>Yes</strong> - Plans will be extended automatically when server recovers
+                                    <strong>Yes</strong> - Plans will be extended automatically when router recovers
                                 </label>
                             </div>
                             <div class="radio">
@@ -86,9 +86,9 @@
             <div class="panel-body">
                 <h4>Automatic Extension Mode (Default)</h4>
                 <ul>
-                    <li>Every 5 minutes, a cron job checks if the RADIUS server is responding</li>
-                    <li>If the server fails 3 consecutive checks (15 minutes), it's marked as offline</li>
-                    <li>When the server comes back online, the system calculates the total downtime duration</li>
+                    <li>Every 5 minutes, a cron job checks if the router is online (from tbl_routers status column)</li>
+                    <li>If the router status is 'Offline' for 3 consecutive checks (15 minutes), it's marked as offline</li>
+                    <li>When the router status changes back to 'Online', the system calculates the total downtime duration</li>
                     <li>All active customer plans are automatically extended by that duration</li>
                     <li>Each customer receives an inbox notification about the extension</li>
                     <li>Duplicate extensions are prevented - each customer can only be extended once per offline period</li>
@@ -120,7 +120,7 @@
                 
                 <div class="alert alert-warning" style="margin-top: 20px;">
                     <i class="fa fa-exclamation-triangle"></i> <strong>Important:</strong> Make sure your cron job is running every 5 minutes:
-                    <pre style="margin-top: 10px;">*/5 * * * * php /path/to/phpnuxbill/system/cron_server_health.php</pre>
+                    <pre style="margin-top: 10px;">*/5 * * * * php /path/to/phpnuxbill/system/cron_router_health.php</pre>
                 </div>
             </div>
         </div>
