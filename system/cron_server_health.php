@@ -3,7 +3,7 @@
 /**
  * Server Health Check Cron
  * Monitors FreeRADIUS server status and tracks offline periods
- * Run every 5-10 minutes via cron: */5 * * * * curl http://localhost/system/cron_server_health.php
+ * Run every 5-10 minutes via cron
  */
 
 // Get server configuration
