@@ -6,6 +6,9 @@
  * Run every 5-10 minutes via cron
  */
 
+// Bootstrap the application
+include "../init.php";
+
 // Get server configuration
 $radius_server = $_c['nas_ip'] ?? 'localhost';
 $radius_port = $_c['nas_port'] ?? 1812;
