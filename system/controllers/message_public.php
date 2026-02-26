@@ -47,11 +47,11 @@ switch ($action) {
             $sender_contact = $logged_in_user['email'] ?: 'Not provided';
             $title = "Message from " . $logged_in_user['username'];
             $message_type = 'user_message';
-            $redirect_url = getUrl('home');
+            $redirect_url = getUrl('message_public/success');
         } else {
             $title = "Guest Message from " . ($sender_name ?: 'Hotspot User');
             $message_type = 'guest_message';
-            $redirect_url = getUrl('message_public/send') . '?nux-mac=' . urlencode($mac) . '&nux-ip=' . urlencode($ip);
+            $redirect_url = getUrl('message_public/success');
         }
 
         // Save to database
@@ -84,6 +84,12 @@ switch ($action) {
         _log('[' . ($is_authenticated ? $logged_in_user['username'] : 'Guest') . ']: Message sent from MAC: ' . $mac . ', IP: ' . $ip, 'Message', $is_authenticated ? $logged_in_user['id'] : 0);
 
         r2($redirect_url, 's', Lang::T('Message sent successfully! An admin will contact you soon.'));
+        break;
+
+    case 'success':
+        // Show success message and redirect back
+        $ui->assign('success', true);
+        $ui->display('message_public_success.tpl');
         break;
 
     default:
