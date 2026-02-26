@@ -5,6 +5,10 @@
         <div class="panel panel-hovered mb20 panel-primary">
             <div class="panel-heading">
                 {Lang::T('Activity Log')}
+                {if $filter_date}
+                    &mdash; <span class="label label-info"><i class="fa fa-calendar"></i> {$filter_date}</span>
+                    <a href="{Text::url('reports/by-date')}" class="btn btn-xs btn-default" style="margin-left:6px">{Lang::T('Show All')}</a>
+                {/if}
             </div>
             <div class="panel-body">
                 <div class="text-center" style="padding: 15px">

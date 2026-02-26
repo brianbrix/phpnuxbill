@@ -259,6 +259,7 @@ switch ($action) {
     case 'by-date':
     case 'activation':
         $q = (_post('q') ? _post('q') : _get('q'));
+        $filter_date = _get('date'); // e.g. passed from dashboard "Income Today" link
         $keep = _post('keep');
         if (!empty($keep)) {
             ORM::raw_execute("DELETE FROM tbl_transactions WHERE date < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL $keep DAY))");
@@ -267,11 +268,15 @@ switch ($action) {
         if ($q != '') {
             $query = ORM::for_table('tbl_transactions')->where_like('invoice', '%' . $q . '%')->order_by_desc('id');
             $d = Paginator::findMany($query, ['q' => $q]);
+        } elseif (!empty($filter_date)) {
+            $query = ORM::for_table('tbl_transactions')->where('recharged_on', $filter_date)->order_by_desc('id');
+            $d = Paginator::findMany($query, ['date' => $filter_date]);
         } else {
             $query = ORM::for_table('tbl_transactions')->order_by_desc('id');
             $d = Paginator::findMany($query);
         }
 
+        $ui->assign('filter_date', $filter_date);
         $ui->assign('activation', $d);
         $ui->assign('q', $q);
         $ui->display('admin/reports/activation.tpl');

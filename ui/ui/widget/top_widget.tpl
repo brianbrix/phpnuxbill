@@ -9,7 +9,7 @@
                 <div class="icon">
                     <i class="ion ion-clock"></i>
                 </div>
-                <a href="{Text::url('reports/by-date')}" class="small-box-footer">{Lang::T('Income Today')}</a>
+                <a href="{Text::url('reports/by-date')}?date={$smarty.now|date_format:'%Y-%m-%d'}" class="small-box-footer">{Lang::T('Income Today')}</a>
             </div>
         </div>
         <div class="col-lg-3 col-xs-6">
