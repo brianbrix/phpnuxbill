@@ -123,8 +123,9 @@ function updateSelectedCount() {
 function handleExtendSubmit(event) {
     event.preventDefault();
     
+    console.log('=== handleExtendSubmit called ===');
     var checked = document.querySelectorAll('.customer-checkbox:checked');
-    console.log('Checkboxes checked:', checked.length);
+    console.log('Step 1: Found ' + checked.length + ' checked checkboxes');
     console.log('Checked values:', Array.from(checked).map(cb => cb.value));
     
     if (checked.length == 0) {
@@ -138,19 +139,23 @@ function handleExtendSubmit(event) {
     var confirmed = confirm('Are you sure you want to extend ' + checked.length + ' customer(s) by ' + duration + ' minutes (' + hours + ' hours)?\n\nThis action cannot be undone.');
     
     if (confirmed) {
-        console.log('Confirmed - collecting data and submitting form');
+        console.log('Step 2: Confirmation received - preparing form submission');
         
         // Get form
         var form = document.getElementById('extendForm');
+        console.log('Step 3: Form found:', form ? 'YES' : 'NO');
         
         // Remove any existing hidden inputs for selected_customers
         var existingHiddens = form.querySelectorAll('input[name="selected_customers[]"][type="hidden"]');
+        console.log('Step 4: Removing ' + existingHiddens.length + ' existing hidden inputs');
         existingHiddens.forEach(function(input) {
             input.remove();
         });
         
         // Add hidden inputs for each checked customer
-        checked.forEach(function(checkbox) {
+        console.log('Step 5: Adding ' + checked.length + ' hidden inputs');
+        checked.forEach(function(checkbox, index) {
+            console.log('  Adding customer: ' + checkbox.value);
             var hiddenInput = document.createElement('input');
             hiddenInput.type = 'hidden';
             hiddenInput.name = 'selected_customers[]';
@@ -164,16 +169,23 @@ function handleExtendSubmit(event) {
         hiddenButton.name = 'extend_selected';
         hiddenButton.value = '1';
         form.appendChild(hiddenButton);
+        console.log('Step 6: Added extend_selected hidden input');
         
         // Log what we're about to submit
         var formData = new FormData(form);
-        console.log('Final FormData to submit:');
+        console.log('Step 7: Final FormData to submit:');
+        var dataCount = 0;
         for (var pair of formData.entries()) {
-            console.log(pair[0] + ': ' + pair[1]);
+            console.log('  ' + pair[0] + ': ' + pair[1]);
+            if (pair[0] === 'selected_customers[]') dataCount++;
         }
+        console.log('Step 8: Total selected_customers[] entries: ' + dataCount);
+        
+        // Alert for verification
+        alert('Ready to submit with ' + dataCount + ' customers. Check console for details.');
         
         // Submit form
-        console.log('Submitting form...');
+        console.log('Step 9: Submitting form to: ' + form.action);
         form.submit();
     }
     
