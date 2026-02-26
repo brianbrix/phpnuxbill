@@ -307,6 +307,11 @@ switch ($do) {
     default:
         run_hook('customer_view_login'); #HOOK
         $csrf_token = Csrf::generateAndStoreToken();
+        
+        // Get available plans widget
+        $availablePlansWidget = new \available_plans();
+        $availablePlansHtml = $availablePlansWidget->getWidget();
+        
         if ($config['disable_registration'] == 'yes') {
             $ui->assign('csrf_token', $csrf_token);
             $ui->assign('_title', Lang::T('Activation'));
@@ -343,6 +348,7 @@ switch ($do) {
             $ui->assign('favicon', $favicon);
             $ui->assign('csrf_token', $csrf_token);
             $ui->assign('_title', Lang::T('Login'));
+            $ui->assign('availablePlansHtml', $availablePlansHtml);
             switch ($config['login_page_type']) {
                 case 'custom':
                     $ui->display('customer/login-custom-' . $config['login_Page_template'] . '.tpl');

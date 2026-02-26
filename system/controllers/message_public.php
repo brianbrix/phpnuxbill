@@ -37,8 +37,8 @@ switch ($action) {
         $sender_contact = _post('sender_contact');
         $message_text = _post('message');
 
-        if (empty($message_text) || strlen(trim($message_text)) < 10) {
-            r2(getUrl('message_public/send') . '?nux-mac=' . urlencode($mac) . '&nux-ip=' . urlencode($ip), 'e', Lang::T('Message must be at least 10 characters'));
+        if (empty($message_text) || strlen(trim($message_text)) < 1) {
+            r2(getUrl('message_public/send') . '?nux-mac=' . urlencode($mac) . '&nux-ip=' . urlencode($ip), 'e', Lang::T('Message cannot be empty'));
         }
 
         // Use authenticated user details if logged in

@@ -221,7 +221,6 @@
                         </label>
                         <textarea id="message" name="message" required 
                             placeholder="Type your message here... / Andika ujumbe wako hapa..."></textarea>
-                        <div class="form-hint">Minimum 10 characters / Angalau herufi 10</div>
                     </div>
 
                     <div class="button-group">

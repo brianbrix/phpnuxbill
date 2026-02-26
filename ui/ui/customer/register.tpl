@@ -3,10 +3,10 @@
 
 <div class="row">
     <div class="col-md-4">
-        <div class="panel panel-primary">
-            <div class="panel-heading">{Lang::T('Registration Info')}</div>
+        <div class="panel panel-success">
+            <div class="panel-heading">{Lang::T('Available Plans')}</div>
             <div class="panel-body">
-                {include file="$_path/../pages/Registration_Info.html"}
+                {include file="widget/customers/available_plans.tpl"}
             </div>
         </div>
     </div>

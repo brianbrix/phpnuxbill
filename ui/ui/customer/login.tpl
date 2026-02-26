@@ -3,13 +3,10 @@
 <div class="hidden-xs" style="height:100px"></div>
 <div class="row">
     <div class="col-sm-6 col-sm-offset-1">
-        <div class="panel panel-info">
-            <div class="panel-heading">{Lang::T('Announcement')}</div>
+        <div class="panel panel-success">
+            <div class="panel-heading">{Lang::T('Available Plans')}</div>
             <div class="panel-body">
-                {$Announcement = "{$PAGES_PATH}/Announcement.html"}
-                {if file_exists($Announcement)}
-                    {include file=$Announcement}
-                {/if}
+                {$availablePlansHtml}
             </div>
         </div>
     </div>
