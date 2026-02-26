@@ -102,6 +102,7 @@ switch ($action) {
 
         // Display success page directly
         $ui->assign('success', true);
+        $ui->assign('is_authenticated', $is_authenticated);
         $ui->display('message_public_success.tpl');
         break;
 
