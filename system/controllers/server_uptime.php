@@ -185,7 +185,7 @@ switch ($action) {
             foreach ($selected_customers as $recharge_id) {
                 $recharge = ORM::for_table('tbl_user_recharges')->find_one($recharge_id);
                 
-                if (!$recharge || $recharge['status'] != 'active') {
+                if (!$recharge || $recharge['status'] != 'on') {
                     $skipped_count++;
                     continue;
                 }
@@ -203,10 +203,14 @@ switch ($action) {
                 }
                 
                 // Extend the plan
-                $old_expiration = $recharge['expiration_date'];
-                $new_expiration = date('Y-m-d H:i:s', strtotime($old_expiration) + ($duration_minutes * 60));
+                $old_expiration_full = $recharge['expiration'] . ' ' . $recharge['time'];
+                $old_expiration = $old_expiration_full;
+                $new_expiration_datetime = strtotime($old_expiration_full) + ($duration_minutes * 60);
+                $new_expiration_date = date('Y-m-d', $new_expiration_datetime);
+                $new_expiration_time = date('H:i:s', $new_expiration_datetime);
                 
-                $recharge->expiration_date = $new_expiration;
+                $recharge->expiration = $new_expiration_date;
+                $recharge->time = $new_expiration_time;
                 $recharge->save();
                 
                 // Record extension
@@ -216,7 +220,7 @@ switch ($action) {
                 $ext_record->recharge_id = $recharge_id;
                 $ext_record->extension_minutes = $duration_minutes;
                 $ext_record->old_expiration = $old_expiration;
-                $ext_record->new_expiration = $new_expiration;
+                $ext_record->new_expiration = $new_expiration_date . ' ' . $new_expiration_time;
                 $ext_record->extended_by = 'manual';
                 $ext_record->admin_id = $admin['id'];
                 $ext_record->save();
@@ -256,8 +260,8 @@ switch ($action) {
         
         // Get all active customers with their plans
         $active_plans = ORM::for_table('tbl_user_recharges')
-            ->where('status', 'active')
-            ->where_gt('expiration_date', date('Y-m-d H:i:s'))
+            ->where('status', 'on')
+            ->where_gt('expiration', date('Y-m-d'))
             ->order_by_asc('customer_id')
             ->find_many();
         
@@ -274,13 +278,15 @@ switch ($action) {
                 ->where('recharge_id', $plan['id'])
                 ->find_one();
             
+            $expiration_full = $plan['expiration'] . ' ' . $plan['time'];
+            
             $customers[] = [
                 'recharge_id' => $plan['id'],
                 'customer_id' => $plan['customer_id'],
                 'username' => $customer['username'],
                 'fullname' => $customer['fullname'],
                 'plan_name' => $plan['plan_name'],
-                'expiration_date' => $plan['expiration_date'],
+                'expiration_date' => $expiration_full,
                 'already_extended' => $already_extended ? true : false
             ];
         }

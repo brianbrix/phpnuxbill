@@ -6,8 +6,8 @@
  * Run every 5-10 minutes via cron
  */
 
-// Bootstrap the application
-include "../init.php";
+// Load system bootstrap
+require_once dirname(__FILE__) . '/../init.php';
 
 // Get server configuration
 $radius_server = $_c['nas_ip'] ?? 'localhost';
@@ -81,13 +81,15 @@ if ($server_is_online) {
     }
     
 } else {
-    // Server is offline
+    // Server is offline (check failed)
     $health->consecutive_failures = ($health['consecutive_failures'] ?? 0) + 1;
     $health->check_failures = ($health['check_failures'] ?? 0) + 1;
     
-    if ($status_changed) {
-        // Just went offline
-        _log('FreeRADIUS Server went offline', 'Server', 0);
+    // Only mark as offline after 3 consecutive failures (15 minutes with 5-min checks)
+    $offline_threshold = 3;
+    if ($health->consecutive_failures >= $offline_threshold && $current_status != 0) {
+        // Just went offline after threshold reached
+        _log('FreeRADIUS Server went offline after ' . $health->consecutive_failures . ' failed checks', 'Server', 0);
         
         // Create new offline period record
         $offline = ORM::for_table($offline_table)->create();
@@ -101,9 +103,10 @@ if ($server_is_online) {
             "Time: " . date('Y-m-d H:i:s') . "\n\n" .
             "Monitoring active. Plans will be extended when server recovers."
         );
+        
+        $health->is_online = 0;
     }
     
-    $health->is_online = 0;
     $health->save();
 }
 
@@ -167,8 +170,8 @@ function extendPlansForOfflineperiod($offline_id, $duration_minutes) {
     
     // Get all active plans that are currently valid
     $plans = ORM::for_table('tbl_user_recharges')
-        ->where('status', 'active')
-        ->where_gt('expiration_date', date('Y-m-d H:i:s'))
+        ->where('status', 'on')
+        ->where_gt('expiration', date('Y-m-d'))
         ->find_many();
     
     $extended_count = 0;
@@ -188,10 +191,15 @@ function extendPlansForOfflineperiod($offline_id, $duration_minutes) {
         }
         
         // Extend expiration by offline duration
-        $old_expiration = $plan['expiration_date'];
-        $new_expiration = date('Y-m-d H:i:s', strtotime($old_expiration) + ($duration_minutes * 60));
+        $old_expiration_full = $plan['expiration'] . ' ' . $plan['time'];
+        $old_expiration = $old_expiration_full;
+        $new_expiration_datetime = strtotime($old_expiration_full) + ($duration_minutes * 60);
+        $new_expiration_date = date('Y-m-d', $new_expiration_datetime);
+        $new_expiration_time = date('H:i:s', $new_expiration_datetime);
+        $new_expiration = $new_expiration_date . ' ' . $new_expiration_time;
         
-        $plan->expiration_date = $new_expiration;
+        $plan->expiration = $new_expiration_date;
+        $plan->time = $new_expiration_time;
         $plan->save();
         
         // Record extension in tracking table
@@ -203,6 +211,7 @@ function extendPlansForOfflineperiod($offline_id, $duration_minutes) {
         $ext_record->old_expiration = $old_expiration;
         $ext_record->new_expiration = $new_expiration;
         $ext_record->extended_by = 'auto';
+        $ext_record->admin_id = NULL;
         $ext_record->save();
         
         $extended_count++;
