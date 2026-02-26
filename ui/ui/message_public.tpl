@@ -186,23 +186,33 @@
                     <input type="hidden" name="nux-mac" value="{$mac}">
                     <input type="hidden" name="nux-ip" value="{$ip}">
 
-                    <div class="form-group">
-                        <label for="sender_name">
-                            <i class="fas fa-user"></i> Your Name / Jina Lako
-                            <span style="color: #999; font-weight: 400;">(Optional / Si lazima)</span>
-                        </label>
-                        <input type="text" id="sender_name" name="sender_name" 
-                            placeholder="e.g. John Doe" maxlength="100">
-                    </div>
+                    {if $is_authenticated}
+                        <div class="alert alert-success">
+                            <i class="fas fa-user-check"></i>
+                            <div>
+                                <strong>Logged in as:</strong> {$logged_in_user['username']}<br>
+                                <small>Your account details will be used to process this message</small>
+                            </div>
+                        </div>
+                    {else}
+                        <div class="form-group">
+                            <label for="sender_name">
+                                <i class="fas fa-user"></i> Your Name / Jina Lako
+                                <span style="color: #999; font-weight: 400;">(Optional / Si lazima)</span>
+                            </label>
+                            <input type="text" id="sender_name" name="sender_name" 
+                                placeholder="e.g. John Doe" maxlength="100">
+                        </div>
 
-                    <div class="form-group">
-                        <label for="sender_contact">
-                            <i class="fas fa-phone"></i> Phone Number / Nambari ya Simu
-                            <span style="color: #999; font-weight: 400;">(Optional / Si lazima)</span>
-                        </label>
-                        <input type="text" id="sender_contact" name="sender_contact" 
-                            placeholder="e.g. 0712345678" maxlength="50">
-                    </div>
+                        <div class="form-group">
+                            <label for="sender_contact">
+                                <i class="fas fa-phone"></i> Phone Number / Nambari ya Simu
+                                <span style="color: #999; font-weight: 400;">(Optional / Si lazima)</span>
+                            </label>
+                            <input type="text" id="sender_contact" name="sender_contact" 
+                                placeholder="e.g. 0712345678" maxlength="50">
+                        </div>
+                    {/if}
 
                     <div class="form-group">
                         <label for="message">

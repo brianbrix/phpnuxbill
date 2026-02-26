@@ -10,11 +10,11 @@
                     {/if}
                 </h4>
                 <div class="btn-group pull-right">
-                    <a href="{Text::url('admin_messages/list')}?filter=unread" 
+                    <a href="{Text::url('admin_messages/list')}&filter=unread" 
                        class="btn btn-{if $filter eq 'unread'}primary{else}default{/if} btn-xs">
                         <i class="glyphicon glyphicon-envelope"></i> {Lang::T('Unread')}
                     </a>
-                    <a href="{Text::url('admin_messages/list')}?filter=all" 
+                    <a href="{Text::url('admin_messages/list')}&filter=all" 
                        class="btn btn-{if $filter eq 'all'}primary{else}default{/if} btn-xs">
                         <i class="glyphicon glyphicon-th-list"></i> {Lang::T('All')}
                     </a>
