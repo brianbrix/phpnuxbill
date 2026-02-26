@@ -32,18 +32,19 @@ switch ($action) {
             r2(getUrl('message_public/send') . '?nux-mac=' . urlencode($mac) . '&nux-ip=' . urlencode($ip), 'e', Lang::T('Message must be at least 10 characters'));
         }
 
-        // Save to database (tbl_admin_notifications or create new table)
+        // Save to database
         $notif = ORM::for_table('tbl_admin_notifications')->create();
-        $notif->user_id = 0; // Public message, no user ID
+        $notif->admin_id = 0; // No specific admin - all see it
+        $notif->title = "Guest Message from " . ($sender_name ?: 'Hotspot User');
         $notif->message = "**Guest Message from Hotspot**\n\n" .
             "Name: " . ($sender_name ?: 'Anonymous') . "\n" .
             "Contact: " . ($sender_contact ?: 'Not provided') . "\n" .
             "MAC: " . $mac . "\n" .
             "IP: " . $ip . "\n\n" .
             "Message:\n" . $message_text;
-        $notif->type = 'info';
-        $notif->is_read = 0;
-        $notif->created_at = date('Y-m-d H:i:s');
+        $notif->type = 'guest_message';
+        $notif->status = 'unread';
+        $notif->created_date = date('Y-m-d H:i:s');
         $notif->save();
 
         // Send Telegram notification to admins
