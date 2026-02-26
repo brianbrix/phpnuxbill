@@ -100,8 +100,9 @@ switch ($action) {
         $log_id = $is_authenticated ? $logged_in_user['id'] : 0;
         _log('[' . $log_user . ']: Message sent from MAC: ' . $mac . ', IP: ' . $ip, 'Message', $log_id);
 
-        $redirect_url = getUrl('message_public/success');
-        r2($redirect_url, 's', Lang::T('Message sent successfully! An admin will contact you soon.'));
+        // Display success page directly
+        $ui->assign('success', true);
+        $ui->display('message_public_success.tpl');
         break;
 
     case 'success':
