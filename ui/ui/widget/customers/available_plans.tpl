@@ -122,7 +122,7 @@
                     {* Subscribe button - 3 behaviors based on login state and payment gateway *}
                     {if !$_user}
                         {* Not logged in → Register *}
-                        <a href="{Text::url('register')}" class="plan-buy-btn plan-buy-btn-reg">
+                        <a href="{Text::url('register')}#register-form" class="plan-buy-btn plan-buy-btn-reg" onclick="scrollToForm(event)">
                             <i class="glyphicon glyphicon-user"></i> {Lang::T('Register to Subscribe')}
                         </a>
                     {elseif $_c['payment_gateway'] neq ''}

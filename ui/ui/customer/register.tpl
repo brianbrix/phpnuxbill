@@ -10,7 +10,7 @@
             </div>
         </div>
     </div>
-    <form enctype="multipart/form-data" action="{Text::url('register/post')}" method="post">
+    <form id="register-form" enctype="multipart/form-data" action="{Text::url('register/post')}" method="post">
         <div class="col-md-4">
             <div class="panel panel-primary">
                 <div class="panel-heading">1. {Lang::T('Register to Connect')}</div>
@@ -103,4 +103,29 @@
         </div>
     </form>
 </div>
+
+<script>
+function scrollToForm(event) {
+    // If already on register page, prevent default and scroll
+    if (document.getElementById('register-form')) {
+        event.preventDefault();
+        document.getElementById('register-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    // Otherwise allow normal link navigation
+}
+
+// Auto-scroll if URL has #register-form anchor
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash === '#register-form') {
+        var form = document.getElementById('register-form');
+        if (form) {
+            setTimeout(function() {
+                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                form.querySelector('input:first-of-type')?.focus();
+            }, 100);
+        }
+    }
+});
+</script>
+
 {include file="customer/footer-public.tpl"}
