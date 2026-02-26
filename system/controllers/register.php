@@ -68,6 +68,7 @@ try {
     }
     $_reg_plans = $rawPlans;
 } catch (Exception $e) {}
+$ui->assign('_plans', $_reg_plans);
 $ui->assign('_reg_plans', $_reg_plans);
 
 switch ($do) {
