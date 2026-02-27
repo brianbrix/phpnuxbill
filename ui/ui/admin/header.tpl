@@ -522,7 +522,7 @@
                             var now = audioContext.currentTime;
                             
                             // Play 4 loud beeps
-                            for (var i = 0; i < 3; i++) {
+                            for (var i = 0; i < 5; i++) {
                                 (function(index) {
                                     var startTime = now + (index * 0.25);
                                     var osc = audioContext.createOscillator();
