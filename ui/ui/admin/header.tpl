@@ -439,17 +439,14 @@
                     </script>
                 {/if}
                 
-                <!-- Recharge Request Notification System -->
+                <!-- Unified Notification System -->
                 <script>
                 (function() {
                     // Only run for admin users
                     var isAdmin = '{$_admin['user_type']}';
                     if (!isAdmin || isAdmin === '') return;
                     
-                    var lastCheckTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
                     var notificationPermission = false;
-                    var checkInterval = 60000; // Check every 60 seconds for NEW requests
-                    var reminderInterval = 300000; // Remind every 5 minutes if there are ANY pending requests
                     var audioContext = null;
                     var audioReady = false;
                     
@@ -465,7 +462,6 @@
                             }
                         }
                         
-                        // Resume if suspended (browser autoplay policy)
                         if (audioContext && audioContext.state === 'suspended') {
                             audioContext.resume().then(() => {
                                 console.log('AudioContext resumed');
@@ -497,52 +493,74 @@
                         notificationPermission = true;
                     }
                     
-                    // Create LOUD notification sound using Web Audio API
-                    function playNotificationSound() {
-                        console.log('playNotificationSound called');
+                    // Sound configurations for different notification types
+                    var soundConfigs = {
+                        recharge: {
+                            beeps: 5,
+                            frequencies: [1000, 1200], // Alternating high-pitched beeps
+                            volume: 0.8,
+                            duration: 0.2,
+                            interval: 0.25
+                        },
+                        message: {
+                            beeps: 3,
+                            frequencies: [600, 800], // Lower, softer tones
+                            volume: 0.6,
+                            duration: 0.15,
+                            interval: 0.3
+                        },
+                        default: {
+                            beeps: 4,
+                            frequencies: [1000, 1200],
+                            volume: 0.7,
+                            duration: 0.2,
+                            interval: 0.25
+                        }
+                    };
+                    
+                    // Create notification sound with configurable parameters
+                    function playNotificationSound(soundType) {
+                        console.log('playNotificationSound called for type:', soundType);
                         
                         if (!audioContext) {
                             console.log('Initializing audio...');
                             initAudio();
-                            // Try again after a brief delay
-                            setTimeout(playNotificationSound, 100);
+                            setTimeout(function() { playNotificationSound(soundType); }, 100);
                             return;
                         }
                         
                         if (audioContext.state === 'suspended') {
                             console.log('AudioContext suspended, resuming...');
                             audioContext.resume().then(() => {
-                                console.log('Resumed, playing sound');
-                                playNotificationSound();
+                                playNotificationSound(soundType);
                             });
                             return;
                         }
                         
                         try {
-                            console.log('Playing notification sound...');
+                            var config = soundConfigs[soundType] || soundConfigs.default;
+                            console.log('Playing ' + soundType + ' sound with config:', config);
                             var now = audioContext.currentTime;
                             
-                            // Play 4 loud beeps
-                            for (var i = 0; i < 5; i++) {
+                            for (var i = 0; i < config.beeps; i++) {
                                 (function(index) {
-                                    var startTime = now + (index * 0.25);
+                                    var startTime = now + (index * config.interval);
                                     var osc = audioContext.createOscillator();
                                     var gain = audioContext.createGain();
                                     
                                     osc.connect(gain);
                                     gain.connect(audioContext.destination);
                                     
-                                    // Alternate between two frequencies for attention-grabbing effect
-                                    osc.frequency.value = (index % 2 === 0) ? 1000 : 1200;
+                                    // Alternate between frequencies
+                                    osc.frequency.value = config.frequencies[index % config.frequencies.length];
                                     
-                                    // LOUD volume (0.8 = 80%)
                                     gain.gain.setValueAtTime(0, startTime);
-                                    gain.gain.linearRampToValueAtTime(0.8, startTime + 0.01);
-                                    gain.gain.linearRampToValueAtTime(0.8, startTime + 0.15);
-                                    gain.gain.linearRampToValueAtTime(0, startTime + 0.2);
+                                    gain.gain.linearRampToValueAtTime(config.volume, startTime + 0.01);
+                                    gain.gain.linearRampToValueAtTime(config.volume, startTime + config.duration);
+                                    gain.gain.linearRampToValueAtTime(0, startTime + config.duration + 0.05);
                                     
                                     osc.start(startTime);
-                                    osc.stop(startTime + 0.2);
+                                    osc.stop(startTime + config.duration + 0.05);
                                 })(i);
                             }
                             
@@ -552,152 +570,166 @@
                         }
                     }
                     
-                    // Expose test function globally
-                    window.testRechargeNotificationSound = playNotificationSound;
+                    // Expose test functions globally
+                    window.testRechargeNotificationSound = function() { playNotificationSound('recharge'); };
+                    window.testMessageNotificationSound = function() { playNotificationSound('message'); };
                     
-                    // Check for new recharge requests (for immediate notification)
-                    function checkNewRechargeRequests() {
-                        fetch(appUrl + '/index.php?_route=recharge_requests/check_new', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: 'last_check=' + encodeURIComponent(lastCheckTime)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success' && data.new_count > 0) {
-                                console.log('New recharge requests detected:', data.new_count);
-                                
-                                // Play loud notification sound
-                                playNotificationSound();
-                                
-                                // Show SweetAlert notification
-                                Swal.fire({
-                                    icon: 'info',
-                                    title: 'New Recharge Request!',
-                                    html: '<strong>' + data.new_count + '</strong> new recharge request(s)<br>' +
-                                          (data.latest_request ? '<br>Customer: <strong>' + data.latest_request.username + '</strong><br>' +
-                                          'Plan: ' + data.latest_request.plan_name : ''),
-                                    position: 'top-end',
-                                    showConfirmButton: true,
-                                    confirmButtonText: 'View Requests',
-                                    showCancelButton: true,
-                                    cancelButtonText: 'Dismiss',
-                                    timer: 15000,
-                                    timerProgressBar: true,
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        window.location.href = appUrl + '/index.php?_route=recharge_requests/list';
-                                    }
-                                });
-                                
-                                // Show browser notification if permitted
-                                if (notificationPermission && data.latest_request) {
-                                    var notification = new Notification('New Recharge Request', {
-                                        body: 'Customer: ' + data.latest_request.username + '\nPlan: ' + data.latest_request.plan_name,
-                                        icon: appUrl + '/ui/ui/images/logo.png',
-                                        requireInteraction: true,
-                                        tag: 'recharge-request-' + data.latest_request.id
-                                    });
-                                    
-                                    notification.onclick = function() {
-                                        window.focus();
-                                        window.location.href = appUrl + '/index.php?_route=recharge_requests/view/' + data.latest_request.id;
-                                        notification.close();
-                                    };
-                                }
-                                
-                                // Update last check time
-                                lastCheckTime = data.timestamp;
-                            }
-                        })
-                        .catch(error => {
-                            console.log('Recharge check failed:', error);
-                        });
-                    }
-                    
-                    // Check for ANY pending requests (for periodic reminders)
-                    function checkPendingRequests() {
-                        fetch(appUrl + '/index.php?_route=recharge_requests/check_new', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: 'last_check=' + encodeURIComponent(lastCheckTime)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success' && data.total_pending > 0) {
-                                console.log('Pending recharge requests reminder:', data.total_pending);
-                                
-                                // Play loud notification sound for reminder
-                                playNotificationSound();
-                                
-                                // Show SweetAlert notification
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: 'Pending Recharge Requests!',
-                                    html: 'You have <strong>' + data.total_pending + '</strong> pending recharge request(s) waiting for action.<br><br>' +
-                                          '<small>This reminder will repeat every 5 minutes until handled.</small>',
-                                    position: 'top-end',
-                                    showConfirmButton: true,
-                                    confirmButtonText: 'View Requests',
-                                    showCancelButton: true,
-                                    cancelButtonText: 'Dismiss',
-                                    timer: 15000,
-                                    timerProgressBar: true,
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        window.location.href = appUrl + '/index.php?_route=recharge_requests/list';
-                                    }
-                                });
-                                
-                                // Show browser notification if permitted
-                                if (notificationPermission) {
-                                    var notification = new Notification('Pending Recharge Requests', {
-                                        body: data.total_pending + ' pending request(s) waiting for action',
-                                        icon: appUrl + '/ui/ui/images/logo.png',
-                                        requireInteraction: true,
-                                        tag: 'pending-recharge-requests'
-                                    });
-                                    
-                                    notification.onclick = function() {
-                                        window.focus();
-                                        window.location.href = appUrl + '/index.php?_route=recharge_requests/list';
-                                        notification.close();
-                                    };
-                                }
-                            } else {
-                                console.log('No pending requests');
-                            }
-                        })
-                        .catch(error => {
-                            console.log('Pending check failed:', error);
-                        });
-                    }
-                    
-                    // Start polling after 5 seconds
-                    setTimeout(function() {
-                        console.log('Starting recharge request monitoring...');
-                        // Initial check for new requests
-                        checkNewRechargeRequests();
-                        // Check every 60 seconds for NEW requests
-                        setInterval(checkNewRechargeRequests, checkInterval);
+                    // Generic notification checker factory
+                    function createNotificationChecker(config) {
+                        var lastCheckTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
                         
-                        // Check every 5 minutes for ANY pending requests (reminder)
-                        setInterval(checkPendingRequests, reminderInterval);
-                        // Also do first reminder check after 5 minutes
-                        setTimeout(checkPendingRequests, reminderInterval);
+                        return {
+                            checkNew: function() {
+                                fetch(appUrl + '/index.php?_route=' + config.endpoint, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                    body: 'last_check=' + encodeURIComponent(lastCheckTime)
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.status === 'success' && data.new_count > 0) {
+                                        console.log('New ' + config.type + ' detected:', data.new_count);
+                                        playNotificationSound(config.soundType);
+                                        
+                                        // Show SweetAlert
+                                        Swal.fire({
+                                            icon: config.icon,
+                                            title: config.title(data),
+                                            html: config.message(data),
+                                            position: 'top-end',
+                                            showConfirmButton: true,
+                                            confirmButtonText: config.confirmText,
+                                            showCancelButton: true,
+                                            cancelButtonText: 'Dismiss',
+                                            timer: 15000,
+                                            timerProgressBar: true,
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                window.location.href = appUrl + config.url(data);
+                                            }
+                                        });
+                                        
+                                        // Browser notification
+                                        if (notificationPermission && data.latest_request) {
+                                            var notification = new Notification(config.notificationTitle(data), {
+                                                body: config.notificationBody(data),
+                                                icon: appUrl + '/ui/ui/images/logo.png',
+                                                requireInteraction: true,
+                                                tag: config.type + '-' + (data.latest_request.id || Date.now())
+                                            });
+                                            
+                                            notification.onclick = function() {
+                                                window.focus();
+                                                window.location.href = appUrl + config.url(data);
+                                                notification.close();
+                                            };
+                                        }
+                                        
+                                        lastCheckTime = data.timestamp;
+                                    }
+                                })
+                                .catch(error => console.log(config.type + ' check failed:', error));
+                            },
+                            
+                            checkPending: function() {
+                                if (!config.pendingCheck) return;
+                                
+                                fetch(appUrl + '/index.php?_route=' + config.endpoint, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                    body: 'last_check=' + encodeURIComponent(lastCheckTime)
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    var pendingCount = data.total_pending || data.total_unread || 0;
+                                    if (data.status === 'success' && pendingCount > 0) {
+                                        console.log('Pending ' + config.type + ' reminder:', pendingCount);
+                                        playNotificationSound(config.soundType);
+                                        
+                                        Swal.fire({
+                                            icon: 'warning',
+                                            title: config.pendingTitle(data),
+                                            html: config.pendingMessage(data),
+                                            position: 'top-end',
+                                            showConfirmButton: true,
+                                            confirmButtonText: config.confirmText,
+                                            showCancelButton: true,
+                                            cancelButtonText: 'Dismiss',
+                                            timer: 15000,
+                                            timerProgressBar: true,
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                window.location.href = appUrl + config.url(data);
+                                            }
+                                        });
+                                    }
+                                })
+                                .catch(error => console.log(config.type + ' pending check failed:', error));
+                            }
+                        };
+                    }
+                    
+                    // Configure recharge request notifications
+                    var rechargeChecker = createNotificationChecker({
+                        type: 'recharge_requests',
+                        endpoint: 'recharge_requests/check_new',
+                        soundType: 'recharge',
+                        icon: 'info',
+                        title: (data) => 'New Recharge Request!',
+                        message: (data) => '<strong>' + data.new_count + '</strong> new recharge request(s)<br>' +
+                            (data.latest_request ? '<br>Customer: <strong>' + data.latest_request.username + '</strong><br>Plan: ' + data.latest_request.plan_name : ''),
+                        confirmText: 'View Requests',
+                        url: (data) => '/index.php?_route=recharge_requests/list',
+                        notificationTitle: (data) => 'New Recharge Request',
+                        notificationBody: (data) => data.latest_request ? 'Customer: ' + data.latest_request.username + '\nPlan: ' + data.latest_request.plan_name : 'New request',
+                        pendingCheck: true,
+                        pendingTitle: (data) => 'Pending Recharge Requests!',
+                        pendingMessage: (data) => 'You have <strong>' + data.total_pending + '</strong> pending recharge request(s) waiting for action.<br><br><small>This reminder will repeat every 5 minutes until handled.</small>'
+                    });
+                    
+                    // Configure admin messages notifications
+                    var messageChecker = createNotificationChecker({
+                        type: 'admin_messages',
+                        endpoint: 'admin_messages/check_new',
+                        soundType: 'message',
+                        icon: 'warning',
+                        title: (data) => 'New Admin Message!',
+                        message: (data) => '<strong>' + data.new_count + '</strong> new message(s)<br>' +
+                            (data.latest_message ? '<br>Type: <strong>' + data.latest_message.type + '</strong><br>Title: ' + data.latest_message.title : ''),
+                        confirmText: 'View Messages',
+                        url: (data) => '/index.php?_route=admin_messages/list',
+                        notificationTitle: (data) => 'New Admin Message',
+                        notificationBody: (data) => data.latest_message ? data.latest_message.title : 'New message',
+                        pendingCheck: false // Admin messages don't need reminder
+                    });
+                    
+                    // Start monitoring
+                    setTimeout(function() {
+                        console.log('Starting notification monitoring...');
+                        
+                        // Initial checks
+                        rechargeChecker.checkNew();
+                        messageChecker.checkNew();
+                        
+                        // Regular checks every 60 seconds
+                        setInterval(rechargeChecker.checkNew, 60000);
+                        setInterval(messageChecker.checkNew, 60000);
+                        
+                        // Pending reminders every 5 minutes
+                        setInterval(rechargeChecker.checkPending, 300000);
+                        setTimeout(rechargeChecker.checkPending, 300000);
                     }, 5000);
                     
-                    // Add test button to navbar (for testing sound)
+                    // Add test buttons to navbar
                     setTimeout(function() {
                         var navMenu = document.querySelector('.navbar-custom-menu .nav.navbar-nav');
                         if (navMenu) {
-                            var testButton = document.createElement('li');
-                            testButton.innerHTML = '<a href="#" onclick="window.testRechargeNotificationSound(); return false;" title="Test Notification Sound" style="padding: 15px 10px;"><i class="fa fa-volume-up"></i></a>';
-                            navMenu.insertBefore(testButton, navMenu.firstChild);
+                            var testButtons = document.createElement('li');
+                            testButtons.className = 'dropdown';
+                            testButtons.innerHTML = '<a href="#" class="dropdown-toggle" data-toggle="dropdown" title="Test Notification Sounds" style="padding: 15px 10px;"><i class="fa fa-volume-up"></i></a>' +
+                                '<ul class="dropdown-menu"><li><a href="#" onclick="window.testRechargeNotificationSound(); return false;">Recharge Sound</a></li>' +
+                                '<li><a href="#" onclick="window.testMessageNotificationSound(); return false;">Message Sound</a></li></ul>';
+                            navMenu.insertBefore(testButtons, navMenu.firstChild);
                             console.log('Test button added to navbar');
                         }
                     }, 1000);

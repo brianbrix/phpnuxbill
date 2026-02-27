@@ -96,4 +96,53 @@ switch ($action) {
             r2(getUrl('admin_messages/list'), 'e', Lang::T('Message not found'));
         }
         break;
+    
+    case 'check_new':
+        // AJAX endpoint to check for new admin messages
+        header('Content-Type: application/json');
+        
+        // Get the last check timestamp from session or parameter
+        $last_check = isset($_SESSION['last_message_check']) ? $_SESSION['last_message_check'] : _post('last_check', date('Y-m-d H:i:s', strtotime('-1 hour')));
+        
+        // Get count of new messages since last check
+        $new_count = ORM::for_table('tbl_admin_notifications')
+            ->where('status', 'unread')
+            ->where_gte('created_date', $last_check)
+            ->count();
+        
+        // Get total unread messages
+        $total_unread = ORM::for_table('tbl_admin_notifications')
+            ->where('status', 'unread')
+            ->count();
+        
+        // Get latest message details if there's a new one
+        $latest_message = null;
+        if ($new_count > 0) {
+            $message = ORM::for_table('tbl_admin_notifications')
+                ->where('status', 'unread')
+                ->where_gte('created_date', $last_check)
+                ->order_by_desc('created_date')
+                ->find_one();
+            
+            if ($message) {
+                $latest_message = [
+                    'id' => $message['id'],
+                    'type' => $message['type'],
+                    'title' => $message['title'],
+                    'created_date' => $message['created_date']
+                ];
+            }
+        }
+        
+        // Update last check timestamp in session
+        $_SESSION['last_message_check'] = date('Y-m-d H:i:s');
+        
+        echo json_encode([
+            'status' => 'success',
+            'new_count' => $new_count,
+            'total_unread' => $total_unread,
+            'latest_message' => $latest_message,
+            'timestamp' => date('Y-m-d H:i:s')
+        ]);
+        die();
 }
