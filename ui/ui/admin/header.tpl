@@ -449,6 +449,43 @@
                     var lastCheckTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
                     var notificationPermission = false;
                     var checkInterval = 60000; // Check every 60 seconds (adjust as needed)
+                    var audioContext = null;
+                    var audioReady = false;
+                    
+                    // Initialize audio context on first user interaction
+                    function initAudio() {
+                        if (!audioContext) {
+                            try {
+                                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                                console.log('AudioContext created, state:', audioContext.state);
+                            } catch (e) {
+                                console.error('Failed to create AudioContext:', e);
+                                return false;
+                            }
+                        }
+                        
+                        // Resume if suspended (browser autoplay policy)
+                        if (audioContext && audioContext.state === 'suspended') {
+                            audioContext.resume().then(() => {
+                                console.log('AudioContext resumed');
+                                audioReady = true;
+                            }).catch(e => {
+                                console.error('Failed to resume AudioContext:', e);
+                            });
+                        } else {
+                            audioReady = true;
+                        }
+                        return true;
+                    }
+                    
+                    // Initialize on any user interaction
+                    ['click', 'keydown', 'touchstart'].forEach(function(event) {
+                        document.addEventListener(event, function initOnInteraction() {
+                            if (initAudio()) {
+                                document.removeEventListener(event, initOnInteraction);
+                            }
+                        }, { once: true });
+                    });
                     
                     // Request notification permission on page load
                     if ('Notification' in window && Notification.permission === 'default') {
@@ -459,50 +496,63 @@
                         notificationPermission = true;
                     }
                     
-                    // Create notification sound using Web Audio API
+                    // Create LOUD notification sound using Web Audio API
                     function playNotificationSound() {
+                        console.log('playNotificationSound called');
+                        
+                        if (!audioContext) {
+                            console.log('Initializing audio...');
+                            initAudio();
+                            // Try again after a brief delay
+                            setTimeout(playNotificationSound, 100);
+                            return;
+                        }
+                        
+                        if (audioContext.state === 'suspended') {
+                            console.log('AudioContext suspended, resuming...');
+                            audioContext.resume().then(() => {
+                                console.log('Resumed, playing sound');
+                                playNotificationSound();
+                            });
+                            return;
+                        }
+                        
                         try {
-                            var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                            var oscillator = audioContext.createOscillator();
-                            var gainNode = audioContext.createGain();
+                            console.log('Playing notification sound...');
+                            var now = audioContext.currentTime;
                             
-                            oscillator.connect(gainNode);
-                            gainNode.connect(audioContext.destination);
+                            // Play 4 loud beeps
+                            for (var i = 0; i < 3; i++) {
+                                (function(index) {
+                                    var startTime = now + (index * 0.25);
+                                    var osc = audioContext.createOscillator();
+                                    var gain = audioContext.createGain();
+                                    
+                                    osc.connect(gain);
+                                    gain.connect(audioContext.destination);
+                                    
+                                    // Alternate between two frequencies for attention-grabbing effect
+                                    osc.frequency.value = (index % 2 === 0) ? 1000 : 1200;
+                                    
+                                    // LOUD volume (0.8 = 80%)
+                                    gain.gain.setValueAtTime(0, startTime);
+                                    gain.gain.linearRampToValueAtTime(0.8, startTime + 0.01);
+                                    gain.gain.linearRampToValueAtTime(0.8, startTime + 0.15);
+                                    gain.gain.linearRampToValueAtTime(0, startTime + 0.2);
+                                    
+                                    osc.start(startTime);
+                                    osc.stop(startTime + 0.2);
+                                })(i);
+                            }
                             
-                            // Play a sequence of beeps (loud notification sound)
-                            oscillator.frequency.value = 880; // A5 note - higher pitch
-                            gainNode.gain.value = 0.3; // Volume
-                            
-                            oscillator.start(audioContext.currentTime);
-                            oscillator.stop(audioContext.currentTime + 0.15);
-                            
-                            // Second beep
-                            setTimeout(function() {
-                                var osc2 = audioContext.createOscillator();
-                                var gain2 = audioContext.createGain();
-                                osc2.connect(gain2);
-                                gain2.connect(audioContext.destination);
-                                osc2.frequency.value = 880;
-                                gain2.gain.value = 0.3;
-                                osc2.start(audioContext.currentTime);
-                                osc2.stop(audioContext.currentTime + 0.15);
-                            }, 200);
-                            
-                            // Third beep (louder)
-                            setTimeout(function() {
-                                var osc3 = audioContext.createOscillator();
-                                var gain3 = audioContext.createGain();
-                                osc3.connect(gain3);
-                                gain3.connect(audioContext.destination);
-                                osc3.frequency.value = 1046; // C6 note - even higher
-                                gain3.gain.value = 0.4; // Louder
-                                osc3.start(audioContext.currentTime);
-                                osc3.stop(audioContext.currentTime + 0.3);
-                            }, 400);
+                            console.log('Sound scheduled successfully');
                         } catch (e) {
-                            console.log('Audio playback failed:', e);
+                            console.error('Audio playback failed:', e);
                         }
                     }
+                    
+                    // Expose test function globally
+                    window.testRechargeNotificationSound = playNotificationSound;
                     
                     // Check for new recharge requests
                     function checkNewRechargeRequests() {
@@ -516,6 +566,8 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.status === 'success' && data.new_count > 0) {
+                                console.log('New recharge requests detected:', data.new_count);
+                                
                                 // Play loud notification sound
                                 playNotificationSound();
                                 
@@ -566,9 +618,21 @@
                     
                     // Start polling after 5 seconds
                     setTimeout(function() {
+                        console.log('Starting recharge request monitoring...');
                         checkNewRechargeRequests();
                         // Then check every interval
                         setInterval(checkNewRechargeRequests, checkInterval);
                     }, 5000);
+                    
+                    // Add test button to navbar (for testing sound)
+                    setTimeout(function() {
+                        var navMenu = document.querySelector('.navbar-custom-menu .nav.navbar-nav');
+                        if (navMenu) {
+                            var testButton = document.createElement('li');
+                            testButton.innerHTML = '<a href="#" onclick="window.testRechargeNotificationSound(); return false;" title="Test Notification Sound" style="padding: 15px 10px;"><i class="fa fa-volume-up"></i></a>';
+                            navMenu.insertBefore(testButton, navMenu.firstChild);
+                            console.log('Test button added to navbar');
+                        }
+                    }, 1000);
                 })();
                 </script>
