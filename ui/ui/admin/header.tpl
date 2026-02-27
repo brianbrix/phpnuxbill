@@ -437,4 +437,138 @@
                             }
                         });
                     </script>
-{/if}
+                {/if}
+                
+                <!-- Recharge Request Notification System -->
+                <script>
+                (function() {
+                    // Only run for admin users
+                    var isAdmin = '{$_admin['user_type']}';
+                    if (!isAdmin || isAdmin === '') return;
+                    
+                    var lastCheckTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+                    var notificationPermission = false;
+                    var checkInterval = 60000; // Check every 60 seconds (adjust as needed)
+                    
+                    // Request notification permission on page load
+                    if ('Notification' in window && Notification.permission === 'default') {
+                        Notification.requestPermission().then(function(permission) {
+                            notificationPermission = (permission === 'granted');
+                        });
+                    } else if ('Notification' in window && Notification.permission === 'granted') {
+                        notificationPermission = true;
+                    }
+                    
+                    // Create notification sound using Web Audio API
+                    function playNotificationSound() {
+                        try {
+                            var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                            var oscillator = audioContext.createOscillator();
+                            var gainNode = audioContext.createGain();
+                            
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+                            
+                            // Play a sequence of beeps (loud notification sound)
+                            oscillator.frequency.value = 880; // A5 note - higher pitch
+                            gainNode.gain.value = 0.3; // Volume
+                            
+                            oscillator.start(audioContext.currentTime);
+                            oscillator.stop(audioContext.currentTime + 0.15);
+                            
+                            // Second beep
+                            setTimeout(function() {
+                                var osc2 = audioContext.createOscillator();
+                                var gain2 = audioContext.createGain();
+                                osc2.connect(gain2);
+                                gain2.connect(audioContext.destination);
+                                osc2.frequency.value = 880;
+                                gain2.gain.value = 0.3;
+                                osc2.start(audioContext.currentTime);
+                                osc2.stop(audioContext.currentTime + 0.15);
+                            }, 200);
+                            
+                            // Third beep (louder)
+                            setTimeout(function() {
+                                var osc3 = audioContext.createOscillator();
+                                var gain3 = audioContext.createGain();
+                                osc3.connect(gain3);
+                                gain3.connect(audioContext.destination);
+                                osc3.frequency.value = 1046; // C6 note - even higher
+                                gain3.gain.value = 0.4; // Louder
+                                osc3.start(audioContext.currentTime);
+                                osc3.stop(audioContext.currentTime + 0.3);
+                            }, 400);
+                        } catch (e) {
+                            console.log('Audio playback failed:', e);
+                        }
+                    }
+                    
+                    // Check for new recharge requests
+                    function checkNewRechargeRequests() {
+                        fetch(appUrl + '/index.php?_route=recharge_requests/check_new', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: 'last_check=' + encodeURIComponent(lastCheckTime)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success' && data.new_count > 0) {
+                                // Play loud notification sound
+                                playNotificationSound();
+                                
+                                // Show SweetAlert notification
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'New Recharge Request!',
+                                    html: '<strong>' + data.new_count + '</strong> new recharge request(s)<br>' +
+                                          (data.latest_request ? '<br>Customer: <strong>' + data.latest_request.username + '</strong><br>' +
+                                          'Plan: ' + data.latest_request.plan_name : ''),
+                                    position: 'top-end',
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'View Requests',
+                                    showCancelButton: true,
+                                    cancelButtonText: 'Dismiss',
+                                    timer: 15000,
+                                    timerProgressBar: true,
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = appUrl + '/index.php?_route=recharge_requests/list';
+                                    }
+                                });
+                                
+                                // Show browser notification if permitted
+                                if (notificationPermission && data.latest_request) {
+                                    var notification = new Notification('New Recharge Request', {
+                                        body: 'Customer: ' + data.latest_request.username + '\nPlan: ' + data.latest_request.plan_name,
+                                        icon: appUrl + '/ui/ui/images/logo.png',
+                                        requireInteraction: true,
+                                        tag: 'recharge-request-' + data.latest_request.id
+                                    });
+                                    
+                                    notification.onclick = function() {
+                                        window.focus();
+                                        window.location.href = appUrl + '/index.php?_route=recharge_requests/view/' + data.latest_request.id;
+                                        notification.close();
+                                    };
+                                }
+                                
+                                // Update last check time
+                                lastCheckTime = data.timestamp;
+                            }
+                        })
+                        .catch(error => {
+                            console.log('Recharge check failed:', error);
+                        });
+                    }
+                    
+                    // Start polling after 5 seconds
+                    setTimeout(function() {
+                        checkNewRechargeRequests();
+                        // Then check every interval
+                        setInterval(checkNewRechargeRequests, checkInterval);
+                    }, 5000);
+                })();
+                </script>

@@ -167,4 +167,53 @@ switch ($action) {
         $ui->assign('requests', $requests);
         $ui->display('admin/recharge_requests/history.tpl');
         break;
+    
+    case 'check_new':
+        // AJAX endpoint to check for new recharge requests
+        header('Content-Type: application/json');
+        
+        // Get the last check timestamp from session or parameter
+        $last_check = isset($_SESSION['last_recharge_check']) ? $_SESSION['last_recharge_check'] : _post('last_check', date('Y-m-d H:i:s', strtotime('-1 hour')));
+        
+        // Get count of new recharge requests since last check
+        $new_count = ORM::for_table('tbl_recharge_requests')
+            ->where('status', 'pending')
+            ->where_gte('requested_date', $last_check)
+            ->count();
+        
+        // Get total pending requests
+        $total_pending = ORM::for_table('tbl_recharge_requests')
+            ->where('status', 'pending')
+            ->count();
+        
+        // Get latest request details if there's a new one
+        $latest_request = null;
+        if ($new_count > 0) {
+            $request = ORM::for_table('tbl_recharge_requests')
+                ->where('status', 'pending')
+                ->where_gte('requested_date', $last_check)
+                ->order_by_desc('requested_date')
+                ->find_one();
+            
+            if ($request) {
+                $latest_request = [
+                    'id' => $request['id'],
+                    'username' => $request['username'],
+                    'plan_name' => $request['plan_name'],
+                    'requested_date' => $request['requested_date']
+                ];
+            }
+        }
+        
+        // Update last check timestamp in session
+        $_SESSION['last_recharge_check'] = date('Y-m-d H:i:s');
+        
+        echo json_encode([
+            'status' => 'success',
+            'new_count' => $new_count,
+            'total_pending' => $total_pending,
+            'latest_request' => $latest_request,
+            'timestamp' => date('Y-m-d H:i:s')
+        ]);
+        die();
 }
