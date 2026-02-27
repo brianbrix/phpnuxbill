@@ -448,7 +448,8 @@
                     
                     var lastCheckTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
                     var notificationPermission = false;
-                    var checkInterval = 60000; // Check every 60 seconds (adjust as needed)
+                    var checkInterval = 60000; // Check every 60 seconds for NEW requests
+                    var reminderInterval = 300000; // Remind every 5 minutes if there are ANY pending requests
                     var audioContext = null;
                     var audioReady = false;
                     
@@ -554,7 +555,7 @@
                     // Expose test function globally
                     window.testRechargeNotificationSound = playNotificationSound;
                     
-                    // Check for new recharge requests
+                    // Check for new recharge requests (for immediate notification)
                     function checkNewRechargeRequests() {
                         fetch(appUrl + '/index.php?_route=recharge_requests/check_new', {
                             method: 'POST',
@@ -616,12 +617,78 @@
                         });
                     }
                     
+                    // Check for ANY pending requests (for periodic reminders)
+                    function checkPendingRequests() {
+                        fetch(appUrl + '/index.php?_route=recharge_requests/check_new', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: 'last_check=' + encodeURIComponent(lastCheckTime)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success' && data.total_pending > 0) {
+                                console.log('Pending recharge requests reminder:', data.total_pending);
+                                
+                                // Play loud notification sound for reminder
+                                playNotificationSound();
+                                
+                                // Show SweetAlert notification
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Pending Recharge Requests!',
+                                    html: 'You have <strong>' + data.total_pending + '</strong> pending recharge request(s) waiting for action.<br><br>' +
+                                          '<small>This reminder will repeat every 5 minutes until handled.</small>',
+                                    position: 'top-end',
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'View Requests',
+                                    showCancelButton: true,
+                                    cancelButtonText: 'Dismiss',
+                                    timer: 15000,
+                                    timerProgressBar: true,
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = appUrl + '/index.php?_route=recharge_requests/list';
+                                    }
+                                });
+                                
+                                // Show browser notification if permitted
+                                if (notificationPermission) {
+                                    var notification = new Notification('Pending Recharge Requests', {
+                                        body: data.total_pending + ' pending request(s) waiting for action',
+                                        icon: appUrl + '/ui/ui/images/logo.png',
+                                        requireInteraction: true,
+                                        tag: 'pending-recharge-requests'
+                                    });
+                                    
+                                    notification.onclick = function() {
+                                        window.focus();
+                                        window.location.href = appUrl + '/index.php?_route=recharge_requests/list';
+                                        notification.close();
+                                    };
+                                }
+                            } else {
+                                console.log('No pending requests');
+                            }
+                        })
+                        .catch(error => {
+                            console.log('Pending check failed:', error);
+                        });
+                    }
+                    
                     // Start polling after 5 seconds
                     setTimeout(function() {
                         console.log('Starting recharge request monitoring...');
+                        // Initial check for new requests
                         checkNewRechargeRequests();
-                        // Then check every interval
+                        // Check every 60 seconds for NEW requests
                         setInterval(checkNewRechargeRequests, checkInterval);
+                        
+                        // Check every 5 minutes for ANY pending requests (reminder)
+                        setInterval(checkPendingRequests, reminderInterval);
+                        // Also do first reminder check after 5 minutes
+                        setTimeout(checkPendingRequests, reminderInterval);
                     }, 5000);
                     
                     // Add test button to navbar (for testing sound)
