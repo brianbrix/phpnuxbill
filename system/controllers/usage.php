@@ -33,31 +33,7 @@ switch ($action) {
         }
         
         // Get all customers
-        $tableInfo = Usage::getTableInfo();
-        
-        // Get sample record for debugging
-        $sample_record = null;
-        $table_count = 0;
-        try {
-            $sample = ORM::for_table('radacct')
-                ->limit(1)
-                ->find_many();
-            if (!empty($sample)) {
-                $sample_record = (array)$sample[0];
-            }
-            $table_count = ORM::for_table('radacct')->count();
-        } catch (Exception $e) {
-            $table_count = -1;
-        }
-        
-        // Test query for first customer
-        $test_usage = null;
-        $first_customer = ORM::for_table('tbl_customers')->order_by_asc('id')->find_one();
-        if ($first_customer) {
-            $test_usage = Usage::getCustomerUsage($first_customer['id'], $date_from, $date_to);
-        }
-        
-        $customers_query = ORM::for_table('tbl_customers')
+        $customers_query = ORM::for_table('tbl_customers', 'nuxbill')
             ->select('tbl_customers.id', 'id')
             ->select('tbl_customers.username', 'username')
             ->select('tbl_customers.fullname', 'fullname')
@@ -99,11 +75,6 @@ switch ($action) {
         $ui->assign('date_from', $date_from);
         $ui->assign('date_to', $date_to);
         $ui->assign('search', $search);
-        $ui->assign('table_info', $tableInfo);
-        $ui->assign('sample_record', $sample_record);
-        $ui->assign('table_count', $table_count);
-        $ui->assign('test_usage', $test_usage);
-        $ui->assign('test_customer', $first_customer);
         $ui->assign('csrf_token', Csrf::generateAndStoreToken());
         $ui->display('admin/usage/list.tpl');
         break;
@@ -122,7 +93,7 @@ switch ($action) {
             $date_to = date('Y-m-d');
         }
         
-        $customer = ORM::for_table('tbl_customers')->find_one($customer_id);
+        $customer = ORM::for_table('tbl_customers', 'nuxbill')->find_one($customer_id);
         if (!$customer) {
             r2(getUrl('usage'), 'e', 'Customer not found');
         }

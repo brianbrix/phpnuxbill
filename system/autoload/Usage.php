@@ -27,34 +27,38 @@ class Usage
     public static function getCustomerUsage($customer_id, $date_from, $date_to)
     {
         // Get customer username
-        $customer = ORM::for_table('tbl_customers')->find_one($customer_id);
+        $customer = ORM::for_table('tbl_customers', 'nuxbill')->find_one($customer_id);
         if (!$customer) {
             return ['data_in' => 0, 'data_out' => 0, 'data_total' => 0, 'sessions' => 0];
         }
         
         try {
-            // Query radacct table with proper date filtering
-            $query = ORM::for_table('radacct')
-                ->where('username', $customer['username'])
-                ->where_raw('DATE(acctstarttime) >= ?', [$date_from])
-                ->where_raw('DATE(acctstarttime) <= ?', [$date_to])
-                ->select_raw('SUM(acctinputoctets) as total_in')
-                ->select_raw('SUM(acctoutputoctets) as total_out')
-                ->select_raw('COUNT(*) as total_sessions')
-                ->find_one();
+            // Simple raw query
+            $result = ORM::raw_query(
+                "SELECT 
+                    COALESCE(SUM(acctinputoctets), 0) as total_in,
+                    COALESCE(SUM(acctoutputoctets), 0) as total_out,
+                    COUNT(*) as total_sessions
+                FROM radacct 
+                WHERE username = ? 
+                AND acctstarttime >= ? 
+                AND acctstarttime <= ?",
+                [$customer['username'], $date_from . ' 00:00:00', $date_to . ' 23:59:59'],
+                'nuxbill'
+            )->find_one();
             
-            if (!$query) {
+            if (!$result) {
                 return ['data_in' => 0, 'data_out' => 0, 'data_total' => 0, 'sessions' => 0];
             }
             
-            $data_in = $query['total_in'] ?? 0;
-            $data_out = $query['total_out'] ?? 0;
+            $data_in = $result['total_in'] ?? 0;
+            $data_out = $result['total_out'] ?? 0;
             
             return [
                 'data_in' => (int)$data_in,
                 'data_out' => (int)$data_out,
                 'data_total' => (int)$data_in + (int)$data_out,
-                'sessions' => $query['total_sessions'] ?? 0
+                'sessions' => $result['total_sessions'] ?? 0
             ];
         } catch (Exception $e) {
             return ['data_in' => 0, 'data_out' => 0, 'data_total' => 0, 'sessions' => 0];
@@ -66,24 +70,28 @@ class Usage
      */
     public static function getDailyUsage($customer_id, $date_from, $date_to)
     {
-        $customer = ORM::for_table('tbl_customers')->find_one($customer_id);
+        $customer = ORM::for_table('tbl_customers', 'nuxbill')->find_one($customer_id);
         if (!$customer) {
             return [];
         }
         
         try {
-            $daily = ORM::for_table('radacct')
-                ->select_raw('DATE(acctstarttime) as date')
-                ->select_raw('SUM(acctinputoctets) as data_in')
-                ->select_raw('SUM(acctoutputoctets) as data_out')
-                ->select_raw('SUM(acctinputoctets) + SUM(acctoutputoctets) as total_bytes')
-                ->select_raw('COUNT(*) as sessions')
-                ->where('username', $customer['username'])
-                ->where_raw('DATE(acctstarttime) >= ?', [$date_from])
-                ->where_raw('DATE(acctstarttime) <= ?', [$date_to])
-                ->group_by_expr('DATE(acctstarttime)')
-                ->order_by_desc('date')
-                ->find_many();
+            $daily = ORM::raw_query(
+                "SELECT 
+                    DATE(acctstarttime) as date,
+                    COALESCE(SUM(acctinputoctets), 0) as data_in,
+                    COALESCE(SUM(acctoutputoctets), 0) as data_out,
+                    COALESCE(SUM(acctinputoctets), 0) + COALESCE(SUM(acctoutputoctets), 0) as total_bytes,
+                    COUNT(*) as sessions
+                FROM radacct 
+                WHERE username = ? 
+                AND acctstarttime >= ? 
+                AND acctstarttime <= ?
+                GROUP BY DATE(acctstarttime)
+                ORDER BY date DESC",
+                [$customer['username'], $date_from . ' 00:00:00', $date_to . ' 23:59:59'],
+                'nuxbill'
+            )->find_many();
             
             $result = [];
             foreach ($daily as $row) {
@@ -110,13 +118,13 @@ class Usage
      */
     public static function getHourlyUsage($customer_id, $date)
     {
-        $customer = ORM::for_table('tbl_customers')->find_one($customer_id);
+        $customer = ORM::for_table('tbl_customers', 'nuxbill')->find_one($customer_id);
         if (!$customer) {
             return [];
         }
         
         try {
-            $hourly = ORM::for_table('radacct')
+            $hourly = ORM::for_table('radacct', 'nuxbill')
                 ->select_raw('HOUR(acctstarttime) as hour')
                 ->select_raw('SUM(acctinputoctets) as data_in')
                 ->select_raw('SUM(acctoutputoctets) as data_out')
@@ -192,7 +200,7 @@ class Usage
     public static function getTopCustomers($limit = 10, $date_from, $date_to)
     {
         try {
-            $customers = ORM::for_table('radacct')
+            $customers = ORM::for_table('radacct', 'nuxbill')
                 ->select_raw('username')
                 ->select_raw('SUM(acctinputoctets) as data_in')
                 ->select_raw('SUM(acctoutputoctets) as data_out')
