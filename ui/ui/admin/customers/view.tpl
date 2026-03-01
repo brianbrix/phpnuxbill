@@ -247,7 +247,7 @@
                                     onclick="return ask(this, '{Lang::T('This will deactivate Customer Plan, and make it expired')}')">{Lang::T('Deactivate')}</a>
                             </div>
                             {if $package['status'] == 'on'}
-                                {if !$package['is_paused']}
+                                {if not $package['is_paused']}
                                     <div class="col-xs-3">
                                         <button type="button" class="btn btn-warning btn-block btn-sm" onclick="pausePlanModal('{$d['id']}', '{$package['id']}', '{$package['namebp']}')">
                                             <i class="fa fa-pause"></i> {Lang::T('Pause')}

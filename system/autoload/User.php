@@ -266,7 +266,11 @@ class User
                 ['tbl_user_recharges.routers', 'routers'],
                 ['tbl_user_recharges.type', 'type'],
                 'admin_id',
-                'prepaid'
+                'prepaid',
+                'is_paused',
+                'paused_on',
+                'paused_by_admin_id',
+                'pause_reason'
             ])
             ->left_outer_join('tbl_plans', ['tbl_plans.id', '=', 'tbl_user_recharges.plan_id'])
             ->left_outer_join('tbl_bandwidth', ['tbl_bandwidth.id', '=', 'tbl_plans.id_bw'])
