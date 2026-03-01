@@ -33,7 +33,7 @@ switch ($action) {
         }
         
         // Get all customers
-        $customers_query = ORM::for_table('tbl_customers', 'nuxbill')
+        $customers_query = ORM::for_table('tbl_customers')
             ->select('tbl_customers.id', 'id')
             ->select('tbl_customers.username', 'username')
             ->select('tbl_customers.fullname', 'fullname')
@@ -93,7 +93,7 @@ switch ($action) {
             $date_to = date('Y-m-d');
         }
         
-        $customer = ORM::for_table('tbl_customers', 'nuxbill')->find_one($customer_id);
+        $customer = ORM::for_table('tbl_customers')->find_one($customer_id);
         if (!$customer) {
             r2(getUrl('usage'), 'e', 'Customer not found');
         }

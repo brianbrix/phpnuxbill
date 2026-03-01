@@ -27,7 +27,7 @@ class Usage
     public static function getCustomerUsage($customer_id, $date_from, $date_to)
     {
         // Get customer username
-        $customer = ORM::for_table('tbl_customers', 'nuxbill')->find_one($customer_id);
+        $customer = ORM::for_table('tbl_customers')->find_one($customer_id);
         if (!$customer) {
             return ['data_in' => 0, 'data_out' => 0, 'data_total' => 0, 'sessions' => 0];
         }
@@ -43,8 +43,7 @@ class Usage
                 WHERE username = ? 
                 AND acctstarttime >= ? 
                 AND acctstarttime <= ?",
-                [$customer['username'], $date_from . ' 00:00:00', $date_to . ' 23:59:59'],
-                'nuxbill'
+                [$customer['username'], $date_from . ' 00:00:00', $date_to . ' 23:59:59']
             )->find_one();
             
             if (!$result) {
@@ -70,7 +69,7 @@ class Usage
      */
     public static function getDailyUsage($customer_id, $date_from, $date_to)
     {
-        $customer = ORM::for_table('tbl_customers', 'nuxbill')->find_one($customer_id);
+        $customer = ORM::for_table('tbl_customers')->find_one($customer_id);
         if (!$customer) {
             return [];
         }
@@ -89,8 +88,7 @@ class Usage
                 AND acctstarttime <= ?
                 GROUP BY DATE(acctstarttime)
                 ORDER BY date DESC",
-                [$customer['username'], $date_from . ' 00:00:00', $date_to . ' 23:59:59'],
-                'nuxbill'
+                [$customer['username'], $date_from . ' 00:00:00', $date_to . ' 23:59:59']
             )->find_many();
             
             $result = [];
@@ -118,13 +116,13 @@ class Usage
      */
     public static function getHourlyUsage($customer_id, $date)
     {
-        $customer = ORM::for_table('tbl_customers', 'nuxbill')->find_one($customer_id);
+        $customer = ORM::for_table('tbl_customers')->find_one($customer_id);
         if (!$customer) {
             return [];
         }
         
         try {
-            $hourly = ORM::for_table('radacct', 'nuxbill')
+            $hourly = ORM::for_table('radacct')
                 ->select_raw('HOUR(acctstarttime) as hour')
                 ->select_raw('SUM(acctinputoctets) as data_in')
                 ->select_raw('SUM(acctoutputoctets) as data_out')
@@ -200,7 +198,7 @@ class Usage
     public static function getTopCustomers($limit = 10, $date_from, $date_to)
     {
         try {
-            $customers = ORM::for_table('radacct', 'nuxbill')
+            $customers = ORM::for_table('radacct')
                 ->select_raw('username')
                 ->select_raw('SUM(acctinputoctets) as data_in')
                 ->select_raw('SUM(acctoutputoctets) as data_out')
