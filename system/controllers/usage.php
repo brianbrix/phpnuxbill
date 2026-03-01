@@ -39,13 +39,13 @@ switch ($action) {
         $sample_record = null;
         $table_count = 0;
         try {
-            $sample = ORM::for_table($tableInfo['table'], $tableInfo['connection'])
+            $sample = ORM::for_table('radacct')
                 ->limit(1)
                 ->find_many();
             if (!empty($sample)) {
                 $sample_record = (array)$sample[0];
             }
-            $table_count = ORM::for_table($tableInfo['table'], $tableInfo['connection'])->count();
+            $table_count = ORM::for_table('radacct')->count();
         } catch (Exception $e) {
             $table_count = -1;
         }

@@ -14,7 +14,7 @@ class Usage
     {
         return [
             'table' => 'radacct',
-            'connection' => 'radius',
+            'connection' => 'default (nuxbill)',
             'input_column' => 'acctinputoctets',
             'output_column' => 'acctoutputoctets',
             'date_column' => 'acctstarttime'
@@ -34,7 +34,7 @@ class Usage
         
         try {
             // Query radacct table with proper date filtering
-            $query = ORM::for_table('radacct', 'radius')
+            $query = ORM::for_table('radacct')
                 ->where('username', $customer['username'])
                 ->where_raw('DATE(acctstarttime) >= ?', [$date_from])
                 ->where_raw('DATE(acctstarttime) <= ?', [$date_to])
@@ -72,7 +72,7 @@ class Usage
         }
         
         try {
-            $daily = ORM::for_table('radacct', 'radius')
+            $daily = ORM::for_table('radacct')
                 ->select_raw('DATE(acctstarttime) as date')
                 ->select_raw('SUM(acctinputoctets) as data_in')
                 ->select_raw('SUM(acctoutputoctets) as data_out')
@@ -116,7 +116,7 @@ class Usage
         }
         
         try {
-            $hourly = ORM::for_table('radacct', 'radius')
+            $hourly = ORM::for_table('radacct')
                 ->select_raw('HOUR(acctstarttime) as hour')
                 ->select_raw('SUM(acctinputoctets) as data_in')
                 ->select_raw('SUM(acctoutputoctets) as data_out')
@@ -192,7 +192,7 @@ class Usage
     public static function getTopCustomers($limit = 10, $date_from, $date_to)
     {
         try {
-            $customers = ORM::for_table('radacct', 'radius')
+            $customers = ORM::for_table('radacct')
                 ->select_raw('username')
                 ->select_raw('SUM(acctinputoctets) as data_in')
                 ->select_raw('SUM(acctoutputoctets) as data_out')
