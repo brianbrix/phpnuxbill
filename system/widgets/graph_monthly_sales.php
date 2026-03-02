@@ -19,7 +19,7 @@ class graph_monthly_sales
                 ->where_raw("YEAR(recharged_on) = YEAR(CURRENT_DATE())")
                 ->where_not_equal('method', 'Customer - Balance')
                 ->where_not_equal('method', 'Recharge Balance - Administrator')
-                ->inner_join('tbl_customers', ['tbl_transactions.customer_id', '=', 'tbl_customers.id'])
+                ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
                 ->where('tbl_customers.exclude_from_stats', 0)
                 ->group_by_expr('MONTH(recharged_on)')
                 ->find_many();

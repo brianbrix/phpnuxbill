@@ -11,7 +11,7 @@ class top_widget
             ->where('recharged_on', $current_date)
             ->where_not_equal('method', 'Customer - Balance')
             ->where_not_equal('method', 'Recharge Balance - Administrator')
-            ->inner_join('tbl_customers', ['tbl_transactions.customer_id', '=', 'tbl_customers.id'])
+            ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
             ->where('tbl_customers.exclude_from_stats', 0)
             ->sum('tbl_transactions.price');
 
@@ -25,7 +25,7 @@ class top_widget
             ->where_not_equal('method', 'Recharge Balance - Administrator')
             ->where_gte('recharged_on', $start_date)
             ->where_lte('recharged_on', $current_date)
-            ->inner_join('tbl_customers', ['tbl_transactions.customer_id', '=', 'tbl_customers.id'])
+            ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
             ->where('tbl_customers.exclude_from_stats', 0)
             ->sum('tbl_transactions.price');
         if ($imonth == '') {

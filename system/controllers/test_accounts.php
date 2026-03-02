@@ -149,7 +149,7 @@ switch ($action) {
             ->sum('price');
         $revenue_included = ORM::for_table('tbl_transactions')
             ->where_gte('recharged_on', $start_date)
-            ->innerJoin('tbl_customers', ['tbl_transactions.customer_id', '=', 'tbl_customers.id'])
+            ->innerJoin('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
             ->where('tbl_customers.exclude_from_stats', 0)
             ->sum('tbl_transactions.price');
         $revenue_excluded = $revenue_all - $revenue_included;
