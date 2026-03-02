@@ -136,7 +136,7 @@ switch ($action) {
         // Active subscriptions
         $active_all = ORM::for_table('tbl_user_recharges')->where('status', 'on')->count();
         $active_included = ORM::for_table('tbl_user_recharges')
-            ->where('status', 'on')
+            ->where('tbl_user_recharges.status', 'on')
             ->innerJoin('tbl_customers', ['tbl_user_recharges.customer_id', '=', 'tbl_customers.id'])
             ->where('tbl_customers.exclude_from_stats', 0)
             ->count();

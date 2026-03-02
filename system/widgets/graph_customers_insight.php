@@ -6,7 +6,7 @@ class graph_customers_insight
     {
         global $CACHE_PATH,$ui;
         $u_act = ORM::for_table('tbl_user_recharges')
-            ->where('status', 'on')
+            ->where('tbl_user_recharges.status', 'on')
             ->inner_join('tbl_customers', ['tbl_user_recharges.customer_id', '=', 'tbl_customers.id'])
             ->where('tbl_customers.exclude_from_stats', 0)
             ->count();
