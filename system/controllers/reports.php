@@ -325,7 +325,7 @@ switch ($action) {
 
         $d->where_gte('recharged_on', $fdate);
         $d->where_lte('recharged_on', $tdate);
-        $d->order_by_desc('id');
+        $d->order_by_desc('tbl_transactions.id');
         $x =  $d->find_many();
 
         $dr = ORM::for_table('tbl_transactions')
