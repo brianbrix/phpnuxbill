@@ -220,6 +220,27 @@
                 </div>
                 <div class="modal-body">
                     <p>{Lang::T('You are requesting a recharge for')}: <strong id="recharge_plan_name"></strong></p>
+                    
+                    <div class="form-group">
+                        <label><strong>{Lang::T('Base Price')}: <span id="recharge_base_price" style="color: #d9534f;"></span></strong></label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>{Lang::T('Quantity')}</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="recharge_quantity" value="1" min="1" max="100" style="text-align: center;">
+                            <span class="input-group-addon">{Lang::T('times')}</span>
+                        </div>
+                        <small class="text-muted">{Lang::T('Multiply plan benefits by quantity')}</small>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="panel panel-info">
+                            <div class="panel-body" style="padding: 8px 12px; margin: 0;">
+                                <strong>{Lang::T('Total Amount to Pay')}: <span id="recharge_total_price" style="color: #d9534f; font-size: 16px;"></span></strong>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="panel-group" id="paymentAccordionRecharge">
                         <!-- M-Pesa -->
@@ -291,6 +312,9 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, setting up recharge request listeners');
         
+        // Store base price for calculations
+        var rechargeBasePrice = 0;
+        
         // Find all request buttons and attach listeners
         var requestBtns = document.querySelectorAll('[id^="requestRechargeBtn_"]');
         console.log('Found ' + requestBtns.length + ' request buttons');
@@ -300,15 +324,19 @@
                 e.preventDefault();
                 var billId = this.getAttribute('data-bill-id');
                 var planName = this.getAttribute('data-plan-name');
-                console.log('Request button clicked - billId:', billId, 'planName:', planName);
+                var planPrice = this.getAttribute('data-plan-price');
+                console.log('Request button clicked - billId:', billId, 'planName:', planName, 'price:', planPrice);
                 
                 currentBillId = billId;
+                rechargeBasePrice = parseFloat(planPrice) || 0;
+                
                 document.getElementById('recharge_plan_name').textContent = planName;
-                var planPrice = this.getAttribute('data-plan-price');
-                document.getElementById('recharge_plan_price_mpesa').textContent = planPrice;
-                document.getElementById('recharge_plan_price_airtel').textContent = planPrice;
+                document.getElementById('recharge_base_price').textContent = planPrice;
                 document.getElementById('recharge_message').value = '';
                 document.getElementById('recharge_quantity').value = 1;
+                
+                // Update prices for initial display
+                updateRechargePrices();
                 
                 // Show modal
                 if (typeof jQuery !== 'undefined') {
@@ -319,6 +347,27 @@
                 }
             });
         });
+        
+        // Handle quantity changes
+        function updateRechargePrices() {
+            var quantity = parseInt(document.getElementById('recharge_quantity').value) || 1;
+            if (quantity < 1) quantity = 1;
+            if (quantity > 100) quantity = 100;
+            
+            var totalPrice = (rechargeBasePrice * quantity).toFixed(2);
+            
+            document.getElementById('recharge_plan_price_mpesa').textContent = totalPrice;
+            document.getElementById('recharge_plan_price_airtel').textContent = totalPrice;
+            document.getElementById('recharge_total_price').textContent = totalPrice;
+        }
+        
+        // Add listener to quantity input
+        var quantityInput = document.getElementById('recharge_quantity');
+        if (quantityInput) {
+            quantityInput.addEventListener('change', updateRechargePrices);
+            quantityInput.addEventListener('keyup', updateRechargePrices);
+            quantityInput.addEventListener('input', updateRechargePrices);
+        }
         
         // Handle submit button
         document.getElementById('submitRechargeBtn').addEventListener('click', function() {

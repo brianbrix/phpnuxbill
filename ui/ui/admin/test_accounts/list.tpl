@@ -42,6 +42,7 @@
                     </div>
                 {else}
                     <form method="post" action="{Text::url('test_accounts/toggle_multiple')}" id="bulkForm">
+                        <input type="hidden" name="csrf_token" value="{$csrf_token}">
                         <div class="form-group" style="margin-bottom: 10px;">
                             <button type="button" class="btn btn-warning btn-sm" onclick="bulkAction('exclude')">
                                 <i class="glyphicon glyphicon-ban-circle"></i> {Lang::T('Exclude Selected')}

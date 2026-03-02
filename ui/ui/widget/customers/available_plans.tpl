@@ -157,6 +157,27 @@
                 <p>{Lang::T('You are requesting to subscribe to')}: <strong id="newPlanName"></strong></p>
                 <p class="text-muted small">{Lang::T('Price')}: <strong><span id="newPlanPrice"></span></strong></p>
 
+                <div class="form-group">
+                    <label><strong>{Lang::T('Base Price')}: <span id="newPlan_base_price" style="color: #d9534f;"></span></strong></label>
+                </div>
+
+                <div class="form-group">
+                    <label>{Lang::T('Quantity')}</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="newPlanQuantity" value="1" min="1" max="100" style="text-align: center;">
+                        <span class="input-group-addon">{Lang::T('times')}</span>
+                    </div>
+                    <small class="text-muted">{Lang::T('Multiply plan benefits by quantity')}</small>
+                </div>
+
+                <div class="form-group">
+                    <div class="panel panel-info">
+                        <div class="panel-body" style="padding: 8px 12px; margin: 0;">
+                            <strong>{Lang::T('Total Amount to Pay')}: <span id="newPlan_total_price" style="color: #d9534f; font-size: 16px;"></span></strong>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="panel-group" id="paymentAccordionNew">
                     <!-- M-Pesa -->
                     <div class="panel panel-success">
@@ -205,11 +226,6 @@
                 </div>
 
                 <div class="form-group" style="margin-top:12px">
-                    <label>{Lang::T('Quantity')}</label>
-                    <input type="number" class="form-control" id="newPlanQuantity" value="1" min="1" max="100" style="text-align: center;">
-                    <small class="text-muted">{Lang::T('Multiply plan benefits by quantity')}</small>
-                </div>
-                <div class="form-group">
                     <label>{Lang::T('Message to Admin')} ({Lang::T('Optional')})</label>
                     <textarea class="form-control" id="newPlanMessage" rows="2"
                         placeholder="{Lang::T('Add any special request or note')}"></textarea>
@@ -227,17 +243,45 @@
 </div>
 <script>
 var _newPlanId = null;
+var newPlanBasePrice = 0;
+
 function requestNewPlan(planId, planName, planPrice) {
     _newPlanId = planId;
+    newPlanBasePrice = parseFloat(planPrice) || 0;
+    
     document.getElementById('newPlanName').textContent = planName;
     document.getElementById('newPlanPrice').textContent = planPrice;
-    document.querySelectorAll('.new-plan-price-step').forEach(function(el){ el.textContent = planPrice; });
+    document.getElementById('newPlan_base_price').textContent = planPrice;
     document.getElementById('newPlanMessage').value = '';
     document.getElementById('newPlanQuantity').value = 1;
     document.getElementById('newPlanResult').style.display = 'none';
     document.getElementById('sendNewPlanBtn').disabled = false;
+    
+    updateNewPlanPrices();
     jQuery('#newPlanRequestModal').modal('show');
 }
+
+function updateNewPlanPrices() {
+    var quantity = parseInt(document.getElementById('newPlanQuantity').value) || 1;
+    if (quantity < 1) quantity = 1;
+    if (quantity > 100) quantity = 100;
+    
+    var totalPrice = (newPlanBasePrice * quantity).toFixed(2);
+    
+    document.querySelectorAll('.new-plan-price-step').forEach(function(el){ el.textContent = totalPrice; });
+    document.getElementById('newPlan_total_price').textContent = totalPrice;
+}
+
+// Add listener to quantity input
+document.addEventListener('DOMContentLoaded', function() {
+    var quantityInput = document.getElementById('newPlanQuantity');
+    if (quantityInput) {
+        quantityInput.addEventListener('change', updateNewPlanPrices);
+        quantityInput.addEventListener('keyup', updateNewPlanPrices);
+        quantityInput.addEventListener('input', updateNewPlanPrices);
+    }
+});
+
 function sendNewPlanRequest() {
     var message = document.getElementById('newPlanMessage').value;
     var quantity = parseInt(document.getElementById('newPlanQuantity').value) || 1;
