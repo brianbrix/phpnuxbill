@@ -75,6 +75,12 @@
                                 <td>{Lang::T('Package Name')}</td>
                                 <td>{$plan['name_plan']}</td>
                             </tr>
+                            {if $trx['quantity'] && $trx['quantity'] > 1}
+                            <tr>
+                                <td>{Lang::T('Quantity')}</td>
+                                <td>{$trx['quantity']}x</td>
+                            </tr>
+                            {/if}
                             {if $add_cost!=0}
                                 {foreach $bills as $k => $v}
                                     <tr>
@@ -121,7 +127,14 @@
                                 {/if}
                                 <tr>
                                     <td>{Lang::T('Validity Periode')}</td>
-                                    <td>{$plan['validity']} {$plan['validity_unit']}</td>
+                                    <td>
+                                        {if $trx['quantity'] && $trx['quantity'] > 1}
+                                            {$plan['validity'] * $trx['quantity']} {$plan['validity_unit']} 
+                                            <small class="text-muted">({$plan['validity']} × {$trx['quantity']})</small>
+                                        {else}
+                                            {$plan['validity']} {$plan['validity_unit']}
+                                        {/if}
+                                    </td>
                                 </tr>
                                 {if $_c['show_bandwidth_plan'] == 'yes'}
                                     <tr>

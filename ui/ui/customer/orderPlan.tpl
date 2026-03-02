@@ -164,9 +164,14 @@
                                         </div>
                                     </div>
                                     <div class="box-body">
+                                        <div class="form-group" style="margin-bottom: 10px;">
+                                            <label style="font-size: 12px;">{Lang::T('Quantity')}</label>
+                                            <input type="number" class="form-control input-sm plan-quantity" value="1" min="1" max="100" data-plan-id="{$plan['id']}">
+                                            <small class="text-muted">{Lang::T('Multiply plan benefits by quantity')}</small>
+                                        </div>
                                         <a href="{Text::url('order/gateway/pppoe/',$plan['id'],'&stoken=',App::getToken())}"
                                             onclick="return ask(this, '{Lang::T('Buy this? your active package will be overwritten')}')"
-                                            class="btn btn-sm btn-block btn-warning text-black">{Lang::T('Buy')}</a>
+                                            class="btn btn-sm btn-block btn-warning text-black buy-plan-btn">{Lang::T('Buy')}</a>
                                         {if $_c['enable_balance'] == 'yes' && $_c['allow_balance_transfer'] == 'yes' && $_user['balance']>=$plan['price']}
                                             <a href="{Text::url('order/send/pppoe/', $plan['id'],'&stoken=',App::getToken())}"
                                                 onclick="return ask(this, '{Lang::T('Buy this for friend account?')}')"
@@ -220,9 +225,14 @@
                                         </div>
                                     </div>
                                     <div class="box-body">
+                                        <div class="form-group" style="margin-bottom: 10px;">
+                                            <label style="font-size: 12px;">{Lang::T('Quantity')}</label>
+                                            <input type="number" class="form-control input-sm plan-quantity" value="1" min="1" max="100" data-plan-id="{$plan['id']}">
+                                            <small class="text-muted">{Lang::T('Multiply plan benefits by quantity')}</small>
+                                        </div>
                                         <a href="{Text::url('order/gateway/hotspot/',$plan['id'],'&stoken=',App::getToken())}"
                                             onclick="return ask(this, '{Lang::T('Buy this? your active package will be overwritten')}')"
-                                            class="btn btn-sm btn-block btn-warning text-black">{Lang::T('Buy')}</a>
+                                            class="btn btn-sm btn-block btn-warning text-black buy-plan-btn">{Lang::T('Buy')}</a>
                                         {if $_c['enable_balance'] == 'yes' && $_c['allow_balance_transfer'] == 'yes' &&
                                                                                                                                                                                                                                                                                                                                         $_user['balance']>=$plan['price']}
                                         <a href="{Text::url('order/send/hotspot/', $plan['id'], '&stoken=', App::getToken())}"
@@ -590,4 +600,56 @@
         {/foreach}
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all plan Buy buttons
+    var buyButtons = document.querySelectorAll('.box-body a[href*="order/gateway"], .box-body a[href*="order/send"]');
+    
+    buyButtons.forEach(function(button) {
+        // Skip if already processed or is "Buy for friend" button
+        if (button.hasAttribute('data-qty-processed') || button.textContent.includes('friend')) {
+            return;
+        }
+        
+        button.setAttribute('data-qty-processed', 'true');
+        
+        // Create quantity input container
+        var qtyDiv = document.createElement('div');
+        qtyDiv.className = 'form-group';
+        qtyDiv.style.marginBottom = '10px';
+        qtyDiv.innerHTML = '<label style="font-size: 12px; font-weight: normal;">{Lang::T("Quantity")}</label>' +
+            '<input type="number" class="form-control input-sm plan-quantity-input" value="1" min="1" max="100" style="text-align: center;">' +
+            '<small class="text-muted" style="font-size: 11px;">{Lang::T("Multiply plan benefits by quantity")}</small>';
+        
+        // Insert before the button
+        button.parentNode.insertBefore(qtyDiv, button);
+        
+        // Store original href
+        button.setAttribute('data-original-href', button.href);
+        
+        // Update href when quantity changes
+        var qtyInput = qtyDiv.querySelector('.plan-quantity-input');
+        qtyInput.addEventListener('change', function() {
+            var qty = parseInt(this.value) || 1;
+            if (qty < 1) {
+                qty = 1;
+                this.value = 1;
+            }
+            if (qty > 100) {
+                qty = 100;
+                this.value = 100;
+            }
+            
+            var originalHref = button.getAttribute('data-original-href');
+            var separator = originalHref.includes('?') ? '&' : '&';
+            button.href = originalHref + separator + 'qty=' + qty;
+        });
+        
+        // Trigger change to set initial href with qty=1
+        qtyInput.dispatchEvent(new Event('change'));
+    });
+});
+</script>
+
 {include file="customer/footer.tpl"}

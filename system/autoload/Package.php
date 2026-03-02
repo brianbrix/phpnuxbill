@@ -15,12 +15,17 @@ class Package
      * @param int   $plan_id plan id for this package
      * @param string $gateway payment gateway name
      * @param string $channel channel payment gateway
-     * @param array $pgids payment gateway ids
+     * @param string $note additional notes
+     * @param int   $quantity quantity to multiply plan benefits (default 1)
      * @return boolean
      */
-    public static function rechargeUser($id_customer, $router_name, $plan_id, $gateway, $channel, $note = '')
+    public static function rechargeUser($id_customer, $router_name, $plan_id, $gateway, $channel, $note = '', $quantity = 1)
     {
         global $config, $admin, $c, $p, $b, $t, $d, $zero, $trx, $_app_stage, $isChangePlan;
+        
+        // Ensure quantity is at least 1
+        $quantity = max(1, (int)$quantity);
+        
         $date_only = date("Y-m-d");
         $time_only = date("H:i:s");
         $time = date("H:i:s");
@@ -142,7 +147,7 @@ class Package
         run_hook("recharge_user");
 
         if ($p['validity_unit'] == 'Months') {
-            $date_exp = date("Y-m-d", strtotime('+' . $p['validity'] . ' month'));
+            $date_exp = date("Y-m-d", strtotime('+' . ($p['validity'] * $quantity) . ' month'));
         } else if ($p['validity_unit'] == 'Period') {
             $current_date = new DateTime($date_only);
             $exp_date = clone $current_date;
@@ -175,19 +180,24 @@ class Package
             if ($p['validity'] > 1) {
                 $exp_date->modify('+' . ($p['validity'] - 1) . ' months');
             }
+            
+            // Adjust for quantity
+            if ($quantity > 1) {
+                $exp_date->modify('+' . (($p['validity'] * ($quantity - 1))) . ' months');
+            }
 
             $date_exp = $exp_date->format('Y-m-d');
             $time = "23:59:59";
         } else if ($p['validity_unit'] == 'Days') {
-            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime('+' . $p['validity'] . ' day')));
+            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime('+' . ($p['validity'] * $quantity) . ' day')));
             $date_exp = $datetime[0];
             $time = $datetime[1];
         } else if ($p['validity_unit'] == 'Hrs') {
-            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime('+' . $p['validity'] . ' hour')));
+            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime('+' . ($p['validity'] * $quantity) . ' hour')));
             $date_exp = $datetime[0];
             $time = $datetime[1];
         } else if ($p['validity_unit'] == 'Mins') {
-            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime('+' . $p['validity'] . ' minute')));
+            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime('+' . ($p['validity'] * $quantity) . ' minute')));
             $date_exp = $datetime[0];
             $time = $datetime[1];
         }
@@ -199,24 +209,24 @@ class Package
                 // if it same internet plan, expired will extend (and not paused)
                 switch ($p['validity_unit']) {
                     case 'Months':
-                        $date_exp = date("Y-m-d", strtotime($b['expiration'] . ' +' . $p['validity'] . ' months'));
+                        $date_exp = date("Y-m-d", strtotime($b['expiration'] . ' +' . ($p['validity'] * $quantity) . ' months'));
                         $time = $b['time'];
                         break;
                     case 'Period':
-                        $date_exp = date("Y-m-$day_exp", strtotime($b['expiration'] . ' +' . $p['validity'] . ' months'));
+                        $date_exp = date("Y-m-$day_exp", strtotime($b['expiration'] . ' +' . ($p['validity'] * $quantity) . ' months'));
                         $time = date("23:59:00");
                         break;
                     case 'Days':
-                        $date_exp = date("Y-m-d", strtotime($b['expiration'] . ' +' . $p['validity'] . ' days'));
+                        $date_exp = date("Y-m-d", strtotime($b['expiration'] . ' +' . ($p['validity'] * $quantity) . ' days'));
                         $time = $b['time'];
                         break;
                     case 'Hrs':
-                        $datetime = explode(' ', date("Y-m-d H:i:s", strtotime($b['expiration'] . ' ' . $b['time'] . ' +' . $p['validity'] . ' hours')));
+                        $datetime = explode(' ', date("Y-m-d H:i:s", strtotime($b['expiration'] . ' ' . $b['time'] . ' +' . ($p['validity'] * $quantity) . ' hours')));
                         $date_exp = $datetime[0];
                         $time = $datetime[1];
                         break;
                     case 'Mins':
-                        $datetime = explode(' ', date("Y-m-d H:i:s", strtotime($b['expiration'] . ' ' . $b['time'] . ' +' . $p['validity'] . ' minutes')));
+                        $datetime = explode(' ', date("Y-m-d H:i:s", strtotime($b['expiration'] . ' ' . $b['time'] . ' +' . ($p['validity'] * $quantity) . ' minutes')));
                         $date_exp = $datetime[0];
                         $time = $datetime[1];
                         break;
@@ -301,6 +311,7 @@ class Package
                     $t->price = $p['price'] + $add_cost;
                 }
             }
+            $t->quantity = $quantity;
             $t->recharged_on = $date_only;
             $t->recharged_time = $time_only;
             $t->expiration = $date_exp;
@@ -336,6 +347,7 @@ class Package
                 "\nRouter: " . $router_name .
                 "\nGateway: " . $gateway .
                 "\nChannel: " . $channel .
+                ($quantity > 1 ? "\nQuantity: " . $quantity . "x" : "") .
                 "\nLast Expired: $lastExpired" .
                 "\nNew Expired: " . Lang::dateAndTimeFormat($date_exp, $time) .
                 "\nPrice: " . Lang::moneyFormat($p['price'] + $add_cost) .
@@ -414,6 +426,7 @@ class Package
                     $t->price = $p['price'] + $add_cost;
                 }
             }
+            $t->quantity = $quantity;
             $t->recharged_on = $date_only;
             $t->recharged_time = $time_only;
             $t->expiration = $date_exp;
@@ -459,6 +472,7 @@ class Package
                 "\nRouter: " . $router_name .
                 "\nGateway: " . $gateway .
                 "\nChannel: " . $channel .
+                ($quantity > 1 ? "\nQuantity: " . $quantity . "x" : "") .
                 "\nExpired: " . Lang::dateAndTimeFormat($date_exp, $time) .
                 "\nPrice: " . Lang::moneyFormat($p['price'] + $add_cost) .
                 "\nNote:\n" . $note);

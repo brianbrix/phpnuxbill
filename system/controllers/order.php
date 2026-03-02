@@ -222,6 +222,9 @@ switch ($action) {
             $router_name = $plan['routers'];
         }
 
+        // Get quantity from request
+        $quantity = isset($_GET['qty']) ? max(1, min(100, (int)$_GET['qty'])) : 1;
+
         list($bills, $add_cost) = User::getBills($id_customer);
 
         // Tax calculation start
@@ -241,9 +244,9 @@ switch ($action) {
             $tax = 0;
         }
         // Tax calculation stop
-        $total_cost = $plan['price'] + $add_cost + $tax;
+        $total_cost = ($plan['price'] + $add_cost + $tax) * $quantity;
         if ($plan && $plan['enabled'] && $user['balance'] >= $total_cost) {
-            if (Package::rechargeUser($user['id'], $router_name, $plan['id'], 'Customer', 'Balance')) {
+            if (Package::rechargeUser($user['id'], $router_name, $plan['id'], 'Customer', 'Balance', '', $quantity)) {
                 // if success, then get the balance
                 Balance::min($user['id'], $total_cost);
                 App::setToken($_GET['stoken'], "success");
@@ -268,6 +271,11 @@ switch ($action) {
         }
         $ui->assign('_title', Lang::T('Buy for friend'));
         $ui->assign('_system_menu', 'package');
+        
+        // Get quantity from request
+        $quantity = isset($_GET['qty']) ? max(1, min(100, (int)$_GET['qty'])) : 1;
+        $ui->assign('quantity', $quantity);
+        
         $plan = ORM::for_table('tbl_plans')->find_one($routes['3']);
         if (empty($plan)) {
             r2(getUrl('order/package'), 'e', Lang::T("Plan Not found"));
@@ -310,15 +318,18 @@ switch ($action) {
                 $ui->assign('add_cost', $add_cost);
                 $plan['price'] += $add_cost;
             }
+            
+            // Apply quantity to total price
+            $total_price = $plan['price'] * $quantity;
 
             if (!$target) {
                 r2(getUrl('home'), 'd', Lang::T('Username not found'));
             }
-            if ($user['balance'] < $plan['price']) {
+            if ($user['balance'] < $total_price) {
                 r2(getUrl('home'), 'd', Lang::T('insufficient balance'));
             }
             if ($user['username'] == $target['username']) {
-                r2(getUrl('order/pay/$routes[2]/$routes[3]'), 's', '^_^ v');
+                r2(getUrl('order/pay/$routes[2]/$routes[3]') . '&qty=' . $quantity, 's', '^_^ v');
             }
             $active = ORM::for_table('tbl_user_recharges')
                 ->where('username', _post('username'))
@@ -328,10 +339,10 @@ switch ($action) {
             if ($active && $active['plan_id'] != $plan['id']) {
                 r2(getUrl('order/package'), 'e', Lang::T("Target has active plan, different with current plant.") . " [ <b>$active[namebp]</b> ]");
             }
-            $result = Package::rechargeUser($target['id'], $router_name, $plan['id'], $user['username'], 'Balance');
+            $result = Package::rechargeUser($target['id'], $router_name, $plan['id'], $user['username'], 'Balance', '', $quantity);
             if (!empty($result)) {
                 // if success, then get the balance
-                Balance::min($user['id'], $plan['price']);
+                Balance::min($user['id'], $total_price);
                 //sender
                 $d = ORM::for_table('tbl_payment_gateway')->create();
                 $d->username = $user['username'];
@@ -341,9 +352,10 @@ switch ($action) {
                 $d->plan_name = $plan['name_plan'];
                 $d->routers_id = $routes['2'];
                 $d->routers = $router_name;
-                $d->price = $plan['price'];
+                $d->price = $total_price;
                 $d->payment_method = "Balance";
                 $d->payment_channel = "Send Plan";
+                $d->quantity = $quantity;
                 $d->created_date = date('Y-m-d H:i:s');
                 $d->paid_date = date('Y-m-d H:i:s');
                 $d->expired_date = date('Y-m-d H:i:s');
@@ -361,9 +373,10 @@ switch ($action) {
                 $d->plan_name = $plan['name_plan'];
                 $d->routers_id = $routes['2'];
                 $d->routers = $router_name;
-                $d->price = $plan['price'];
+                $d->price = $total_price;
                 $d->payment_method = "Balance";
                 $d->payment_channel = "Received Plan";
+                $d->quantity = $quantity;
                 $d->created_date = date('Y-m-d H:i:s');
                 $d->paid_date = date('Y-m-d H:i:s');
                 $d->expired_date = date('Y-m-d H:i:s');
@@ -375,7 +388,8 @@ switch ($action) {
             } else {
                 $errorMessage = "Send Package with Balance Failed\n\n#u$user[username] #send \n" . $plan['name_plan'] .
                     "\nRouter: " . $router_name .
-                    "\nPrice: " . $plan['price'];
+                    "\nPrice: " . $total_price .
+                    "\nQuantity: " . $quantity;
 
                 if ($tax_enable === 'yes') {
                     $errorMessage .= "\nTax: " . $tax;
@@ -397,6 +411,11 @@ switch ($action) {
         if (strpos($user['email'], '@') === false) {
             r2(getUrl('accounts/profile'), 'e', Lang::T("Please enter your email address"));
         }
+        
+        // Get quantity from request
+        $quantity = isset($_GET['qty']) ? max(1, min(100, (int)$_GET['qty'])) : 1;
+        $ui->assign('quantity', $quantity);
+        
         $tax_enable = isset($config['enable_tax']) ? $config['enable_tax'] : 'no';
         $tax_rate_setting = isset($config['tax_rate']) ? $config['tax_rate'] : null;
         $custom_tax_rate = isset($config['custom_tax_rate']) ? (float)$config['custom_tax_rate'] : null;
@@ -503,6 +522,12 @@ switch ($action) {
         }
 
         $tax = Package::tax($plan['price'] + $add_cost, $tax_rate);
+        
+        // Apply quantity to plan price and tax
+        $plan['price'] = $plan['price'] * $quantity;
+        $add_cost = $add_cost * $quantity;
+        $tax = $tax * $quantity;
+        
         $pgs = array_values(explode(',', $config['payment_gateway']));
         if (count($pgs) == 0) {
             sendTelegram("Payment Gateway not set, please set it in Settings");
@@ -539,9 +564,14 @@ switch ($action) {
     case 'buy':
         $gateway = _post('gateway');
         $discount = _post('discount') ?: 0;
+        
+        // Get quantity from request (from GET or POST)
+        $quantity = isset($_GET['qty']) ? (int)$_GET['qty'] : (isset($_POST['qty']) ? (int)$_POST['qty'] : 1);
+        $quantity = max(1, min(100, $quantity));
+        
         if ($gateway == 'balance') {
             unset($_SESSION['gateway']);
-            r2(getUrl('order/pay/') . $routes[2] . '/' . $routes[3]);
+            r2(getUrl('order/pay/') . $routes[2] . '/' . $routes[3] . '&qty=' . $quantity);
         }
         if (empty($gateway) && !empty($_SESSION['gateway'])) {
             $gateway = $_SESSION['gateway'];
@@ -659,13 +689,14 @@ switch ($action) {
                         // Postpaid price from field
                         $add_inv = User::getAttribute("Invoice", $id_customer);
                         if (empty($add_inv) or $add_inv == 0) {
-                            $d->price = $plan['price'] + $add_cost + $tax - $discount;
+                            $d->price = ($plan['price'] + $add_cost + $tax - $discount) * $quantity;
                         } else {
-                            $d->price = $add_inv + $add_cost + $tax - $discount;
+                            $d->price = ($add_inv + $add_cost + $tax - $discount) * $quantity;
                         }
                     } else {
-                        $d->price = $plan['price'] + $add_cost + $tax - $discount;
+                        $d->price = ($plan['price'] + $add_cost + $tax - $discount) * $quantity;
                     }
+                    $d->quantity = $quantity;
                     $d->created_date = date('Y-m-d H:i:s');
                     $d->status = 1;
                     $d->save();
@@ -682,14 +713,15 @@ switch ($action) {
                         // Postpaid price from field
                         $add_inv = User::getAttribute("Invoice", $id_customer);
                         if (empty($add_inv) or $add_inv == 0) {
-                            $d->price = ($plan['price'] + $add_cost + $tax - $discount);
+                            $d->price = (($plan['price'] + $add_cost + $tax - $discount) * $quantity);
                         } else {
-                            $d->price = ($add_inv + $add_cost + $tax - $discount);
+                            $d->price = (($add_inv + $add_cost + $tax - $discount) * $quantity);
                         }
                     } else {
-                        $d->price = ($plan['price'] + $add_cost + $tax - $discount);
+                        $d->price = (($plan['price'] + $add_cost + $tax - $discount) * $quantity);
                     }
                     //$d->price = ($plan['price'] + $add_cost);
+                    $d->quantity = $quantity;
                     $d->created_date = date('Y-m-d H:i:s');
                     $d->status = 1;
                     $d->save();

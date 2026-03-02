@@ -12,6 +12,12 @@
                             <td>{Lang::T('Type')}</td>
                             <td>{$plan['type']}</td>
                         </tr>
+                        {if $quantity && $quantity > 1}
+                        <tr>
+                            <td>{Lang::T('Quantity')}</td>
+                            <td>{$quantity}x</td>
+                        </tr>
+                        {/if}
                         {if $add_cost!=0}
                         {foreach $bills as $k => $v}
                         <tr>
@@ -39,7 +45,14 @@
                         </tr>
                         <tr>
                             <td>{Lang::T('Validity Periode')}</td>
-                            <td>{$plan['validity']} {$plan['validity_unit']}</td>
+                            <td>
+                                {if $quantity && $quantity > 1}
+                                    {$plan['validity'] * $quantity} {$plan['validity_unit']} 
+                                    <small class="text-muted">({$plan['validity']} × {$quantity})</small>
+                                {else}
+                                    {$plan['validity']} {$plan['validity_unit']}
+                                {/if}
+                            </td>
                         </tr>
                     </tbody>
                 </table>

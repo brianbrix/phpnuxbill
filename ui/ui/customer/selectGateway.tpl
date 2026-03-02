@@ -48,11 +48,25 @@
                                 {Lang::moneyFormat($plan['price'])}
                             </span>
                         </li>
+                        
+                        {if $quantity && $quantity > 1}
+                        <li class="list-group-item">
+                            <b>{Lang::T('Quantity')}</b>
+                            <span class="pull-right">{$quantity}x</span>
+                        </li>
+                        {/if}
 
                         {if $plan['validity']}
                             <li class="list-group-item">
                                 <b>{Lang::T('Validity Period')}</b>
-                                <span class="pull-right">{$plan['validity']} {$plan['validity_unit']}</span>
+                                <span class="pull-right">
+                                    {if $quantity && $quantity > 1}
+                                        {$plan['validity'] * $quantity} {$plan['validity_unit']} 
+                                        <small class="text-muted">({$plan['validity']} × {$quantity})</small>
+                                    {else}
+                                        {$plan['validity']} {$plan['validity_unit']}
+                                    {/if}
+                                </span>
                             </li>
                         {/if}
                     </ul>
@@ -145,6 +159,7 @@
                 <!-- Payment Gateway Form -->
                 <form method="post" action="{Text::url('order/buy/')}{$route2}/{$route3}">
                     <input type="hidden" name="coupon" value="{$discount}">
+                    <input type="hidden" name="qty" value="{if $quantity}{$quantity}{else}1{/if}">
                     {if $custom == '1' && $amount neq ''}
                         <input type="hidden" name="custom" value="1">
                         <input type="hidden" name="amount" value="{$amount}">
