@@ -91,6 +91,22 @@
                             $d['auto_renewal']}yes{else}no
                             {/if}</span>
                     </li>
+                    {if in_array($_admin['user_type'],['SuperAdmin','Admin'])}
+                        <li class="list-group-item {if $d['exclude_from_stats'] == 1}warning{/if}">
+                            <b>{Lang::T('Statistics')}</b> 
+                            <span class="pull-right">
+                                {if $d['exclude_from_stats'] == 1}
+                                    <span class="label label-warning">
+                                        <i class="glyphicon glyphicon-ban-circle"></i> {Lang::T('Excluded')}
+                                    </span>
+                                {else}
+                                    <span class="label label-success">
+                                        <i class="glyphicon glyphicon-ok"></i> {Lang::T('Included')}
+                                    </span>
+                                {/if}
+                            </span>
+                        </li>
+                    {/if}
                     <li class="list-group-item">
                         <b>{Lang::T('Created On')}</b> <span
                             class="pull-right">{Lang::dateTimeFormat($d['created_at'])}</span>
@@ -110,7 +126,26 @@
                         </li>
                     {/if}
                 </ul>
-                <div class="row">
+                {if in_array($_admin['user_type'],['SuperAdmin','Admin'])}
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="col-xs-12">
+                            {if $d['exclude_from_stats'] == 1}
+                                <a href="{Text::url('test_accounts/toggle/', $d['id'], '?redirect=customer')}" 
+                                   class="btn btn-success btn-sm btn-block"
+                                   onclick="return confirm('{Lang::T('Include this customer in statistics?')}')">
+                                    <i class="glyphicon glyphicon-ok"></i> {Lang::T('Include in Statistics')}
+                                </a>
+                            {else}
+                                <a href="{Text::url('test_accounts/toggle/', $d['id'], '?redirect=customer')}" 
+                                   class="btn btn-warning btn-sm btn-block"
+                                   onclick="return confirm('{Lang::T('Exclude this customer from statistics? (Mark as test account)')}')">
+                                    <i class="glyphicon glyphicon-ban-circle"></i> {Lang::T('Exclude from Statistics')}
+                                </a>
+                            {/if}
+                        </div>
+                    </div>
+                {/if}
+                <div class="row" style="margin-top: 10px;">
                     <div class="col-xs-4">
                         <a href="{Text::url('customers/delete/', $d['id'], '&token=', $csrf_token)}" id="{$d['id']}"
                             class="btn btn-danger btn-block btn-sm"

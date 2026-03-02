@@ -20,6 +20,7 @@ class graph_monthly_registered_customers
                 ->select_expr('MONTH(created_at)', 'month')
                 ->select_expr('COUNT(*)', 'count')
                 ->where_raw('YEAR(created_at) = YEAR(NOW())')
+                ->where('exclude_from_stats', 0)
                 ->group_by_expr('MONTH(created_at)')
                 ->find_many();
 
