@@ -50,6 +50,8 @@ switch ($action) {
             case 'type':
                 foreach ($tps as $tp) {
                     $query = ORM::for_table('tbl_transactions')
+                        ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+                        ->where('tbl_customers.exclude_from_stats', 0)
                         ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) >= " . strtotime("$sd $ts"))
                         ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) <= " . strtotime("$ed $te"))
                         ->where('type', $tp);
@@ -80,6 +82,8 @@ switch ($action) {
             case 'plan':
                 foreach ($plns as $pln) {
                     $query = ORM::for_table('tbl_transactions')
+                        ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+                        ->where('tbl_customers.exclude_from_stats', 0)
                         ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) >= " . strtotime("$sd $ts"))
                         ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) <= " . strtotime("$ed $te"))
                         ->where('plan_name', $pln);
@@ -110,6 +114,8 @@ switch ($action) {
             case 'method':
                 foreach ($mts as $mt) {
                     $query = ORM::for_table('tbl_transactions')
+                        ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+                        ->where('tbl_customers.exclude_from_stats', 0)
                         ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) >= " . strtotime("$sd $ts"))
                         ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) <= " . strtotime("$ed $te"))
                         ->where_like('method', "$mt - %");
@@ -132,6 +138,8 @@ switch ($action) {
             case 'router':
                 foreach ($rts as $rt) {
                     $query = ORM::for_table('tbl_transactions')
+                        ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+                        ->where('tbl_customers.exclude_from_stats', 0)
                         ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) >= " . strtotime("$sd $ts"))
                         ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) <= " . strtotime("$ed $te"))
                         ->where('routers', $rt);
@@ -150,9 +158,11 @@ switch ($action) {
                 break;
             case 'line':
                 $query = ORM::for_table('tbl_transactions')
+                    ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+                    ->where('tbl_customers.exclude_from_stats', 0)
                     ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) >= " . strtotime("$sd $ts"))
                     ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) <= " . strtotime("$ed $te"))
-                    ->order_by_desc('id');
+                    ->order_by_desc('tbl_transactions.id');
                 if (count($tps) > 0) {
                     $query->where_in('type', $tps);
                 }
@@ -266,13 +276,24 @@ switch ($action) {
             r2(getUrl('logs/list/'), 's', "Delete logs older than $keep days");
         }
         if ($q != '') {
-            $query = ORM::for_table('tbl_transactions')->where_like('invoice', '%' . $q . '%')->order_by_desc('id');
+            $query = ORM::for_table('tbl_transactions')
+                ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+                ->where('tbl_customers.exclude_from_stats', 0)
+                ->where_like('invoice', '%' . $q . '%')
+                ->order_by_desc('tbl_transactions.id');
             $d = Paginator::findMany($query, ['q' => $q]);
         } elseif (!empty($filter_date)) {
-            $query = ORM::for_table('tbl_transactions')->where('recharged_on', $filter_date)->order_by_desc('id');
+            $query = ORM::for_table('tbl_transactions')
+                ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+                ->where('tbl_customers.exclude_from_stats', 0)
+                ->where('recharged_on', $filter_date)
+                ->order_by_desc('tbl_transactions.id');
             $d = Paginator::findMany($query, ['date' => $filter_date]);
         } else {
-            $query = ORM::for_table('tbl_transactions')->order_by_desc('id');
+            $query = ORM::for_table('tbl_transactions')
+                ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+                ->where('tbl_customers.exclude_from_stats', 0)
+                ->order_by_desc('tbl_transactions.id');
             $d = Paginator::findMany($query);
         }
 
@@ -295,7 +316,9 @@ switch ($action) {
         $tdate = _post('tdate');
         $stype = _post('stype');
 
-        $d = ORM::for_table('tbl_transactions');
+        $d = ORM::for_table('tbl_transactions')
+            ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+            ->where('tbl_customers.exclude_from_stats', 0);
         if ($stype != '') {
             $d->where('type', $stype);
         }
@@ -305,14 +328,16 @@ switch ($action) {
         $d->order_by_desc('id');
         $x =  $d->find_many();
 
-        $dr = ORM::for_table('tbl_transactions');
+        $dr = ORM::for_table('tbl_transactions')
+            ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+            ->where('tbl_customers.exclude_from_stats', 0);
         if ($stype != '') {
             $dr->where('type', $stype);
         }
 
         $dr->where_gte('recharged_on', $fdate);
         $dr->where_lte('recharged_on', $tdate);
-        $xy = $dr->sum('price');
+        $xy = $dr->sum('tbl_transactions.price');
 
         $ui->assign('d', $x);
         $ui->assign('dr', $xy);
@@ -351,9 +376,11 @@ switch ($action) {
 
 
         $query = ORM::for_table('tbl_transactions')
+            ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
+            ->where('tbl_customers.exclude_from_stats', 0)
             ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) >= " . strtotime("$sd $ts"))
             ->whereRaw("UNIX_TIMESTAMP(CONCAT(`recharged_on`,' ',`recharged_time`)) <= " . strtotime("$ed $te"))
-            ->order_by_desc('id');
+            ->order_by_desc('tbl_transactions.id');
         if (count($tps) > 0) {
             $query->where_in('type', $tps);
         }
@@ -373,7 +400,7 @@ switch ($action) {
             $query->where_in('plan_name', $plns);
         }
         $d = Paginator::findMany($query, [], 100, $urlquery);
-        $dr = $query->sum('price');
+        $dr = $query->sum('tbl_transactions.price');
 
         $ui->assign('methods', $methods);
         $ui->assign('types', $types);

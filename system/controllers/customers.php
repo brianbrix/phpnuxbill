@@ -39,6 +39,7 @@ switch ($action) {
             ->select('email')
             ->select('balance')
             ->select('service_type')
+            ->where('exclude_from_stats', 0)
             ->order_by_asc('tbl_customers.id')
             ->find_array();
 
@@ -101,6 +102,7 @@ switch ($action) {
             ->select('status')
             ->select('method', 'Payment')
             ->left_outer_join('tbl_user_recharges', array('tbl_customers.id', '=', 'tbl_user_recharges.customer_id'))
+            ->where('tbl_customers.exclude_from_stats', 0)
             ->order_by_asc('tbl_customers.id')
             ->find_array();
 
@@ -950,10 +952,12 @@ switch ($action) {
 
         if ($search != '') {
             $query = ORM::for_table('tbl_customers')
+                ->where('exclude_from_stats', 0)
                 ->whereRaw("username LIKE '%$search%' OR fullname LIKE '%$search%' OR address LIKE '%$search%' " .
                     "OR phonenumber LIKE '%$search%' OR email LIKE '%$search%' AND status='$filter'");
         } else {
             $query = ORM::for_table('tbl_customers');
+            $query->where('exclude_from_stats', 0);
             $query->where("status", $filter);
         }
         if ($order == 'lastname') {
