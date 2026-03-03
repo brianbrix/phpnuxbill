@@ -1129,6 +1129,47 @@ switch ($action) {
             $query->where('status', $status);
         }
         $d = Paginator::findMany($query, ['search' => $search], 25, $append_url);
+
+        $activeDeviceCounts = [];
+        $planSharedLimits = [];
+        $usernames = [];
+        $planIds = [];
+        foreach ($d as $row) {
+            $usernames[] = $row['username'];
+            $planIds[] = $row['plan_id'];
+        }
+        $usernames = array_unique($usernames);
+        $usernames = array_filter($usernames, function ($value) {
+            return $value !== '' && $value !== null;
+        });
+        $planIds = array_unique($planIds);
+        $planIds = array_filter($planIds, function ($value) {
+            return $value !== '' && $value !== null;
+        });
+        if (!empty($usernames)) {
+            $activeSessions = ORM::for_table('radacct')
+                ->select('username')
+                ->select_expr('COUNT(*)', 'device_count')
+                ->where_raw("(acctstoptime IS NULL OR acctstoptime = '0000-00-00 00:00:00')")
+                ->where_in('username', $usernames)
+                ->group_by('username')
+                ->find_many();
+            foreach ($activeSessions as $session) {
+                $activeDeviceCounts[$session['username']] = (int)$session['device_count'];
+            }
+        }
+        if (!empty($planIds)) {
+            $planRecords = ORM::for_table('tbl_plans')
+                ->select('id')
+                ->select('shared_users')
+                ->where_in('id', $planIds)
+                ->find_many();
+            foreach ($planRecords as $planRecord) {
+                $planSharedLimits[$planRecord['id']] = (int)$planRecord['shared_users'];
+            }
+        }
+        $ui->assign('active_devices', $activeDeviceCounts);
+        $ui->assign('plan_shared_limits', $planSharedLimits);
         run_hook('view_list_billing'); #HOOK
         $ui->assign('d', $d);
         $ui->display('admin/plan/active.tpl');

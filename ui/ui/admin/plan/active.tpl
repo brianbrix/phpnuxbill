@@ -81,6 +81,7 @@
                                 <th>{Lang::T("Created On")}</th>
                                 <th>{Lang::T("Expires On")}</th>
                                 <th>{Lang::T("Method")}</th>
+                                <th>{Lang::T("Connected Devices")}</th>
                                 <th><a href="{Text::url('')}routers/list">{Lang::T("Location")}</a></th>
                                 <th>{Lang::T("Manage")}</th>
                             </tr>
@@ -114,6 +115,14 @@
                                     <td>{Lang::dateAndTimeFormat($ds['recharged_on'],$ds['recharged_time'])}</td>
                                     <td>{Lang::dateAndTimeFormat($ds['expiration'],$ds['time'])}</td>
                                     <td>{$ds['method']}</td>
+                                    <td>
+                                        {assign var="connected" value=$active_devices[$ds.username]|default:0}
+                                        {assign var="shared_limit" value=$plan_shared_limits[$ds.plan_id]}
+                                        {$connected}
+                                        {if $shared_limit}
+                                            / {$shared_limit}
+                                        {/if}
+                                    </td>
                                     <td>{$ds['routers']}</td>
                                     <td>
                                         <a href="{Text::url('')}plan/edit/{$ds['id']}" class="btn btn-warning btn-xs"
