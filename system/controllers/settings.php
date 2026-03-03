@@ -966,6 +966,142 @@ switch ($action) {
         file_put_contents($UPLOAD_PATH . "/notifications.json", json_encode($_POST));
         r2(getUrl('settings/notifications'), 's', Lang::T('Settings Saved Successfully'));
         break;
+    case 'dbbrowser':
+        if (!in_array($admin['user_type'], ['SuperAdmin', 'Admin'])) {
+            _alert(Lang::T('You do not have permission to access this page'), 'danger', "dashboard");
+        }
+
+        $dbc = new mysqli($db_host, $db_user, $db_pass, $db_name);
+        if ($dbc->connect_errno) {
+            _alert(Lang::T('Unable to connect to the database'), 'danger', "dashboard");
+        }
+
+        $tables = [];
+        if ($result = $dbc->query('SHOW TABLE STATUS')) {
+            while ($row = $result->fetch_assoc()) {
+                $tables[] = [
+                    'name' => $row['Name'],
+                    'rows' => (int)($row['Rows'] ?? 0)
+                ];
+            }
+            $result->free();
+        }
+
+        $perPageOptions = [
+            '10' => 10,
+            '50' => 50,
+            '100' => 100,
+            '200' => 200,
+            '500' => 500,
+            'all' => Lang::T('All')
+        ];
+        $selectedTable = _post('table');
+        $searchTerm = trim(_post('search', ''));
+        $perPageInput = _post('per_page', '50');
+        $perPage = $perPageInput === 'all' ? null : max(1, min(1000, intval($perPageInput)));
+        $page = max(1, intval(_post('page', 1)));
+        $browserError = '';
+        $tablePreview = null;
+        $tableColumns = [];
+        if (!empty($selectedTable)) {
+            $username = trim(_post('db_username'));
+            $password = _post('db_password');
+            if ($username === '' || $password === '') {
+                $browserError = Lang::T('Username and password are required to view database content');
+            } else {
+                $authAdmin = ORM::for_table('tbl_users')->where('username', $username)->find_one();
+                if (!$authAdmin || !Password::_verify($password, $authAdmin['password'])) {
+                    $browserError = Lang::T('Invalid username or password');
+                } elseif ($authAdmin['id'] != $admin['id']) {
+                    $browserError = Lang::T('Please re-enter your own credentials to proceed');
+                } else {
+                    $tableEscaped = $dbc->real_escape_string($selectedTable);
+                    if ($columnsResult = $dbc->query("SHOW COLUMNS FROM `{$tableEscaped}`")) {
+                        while ($column = $columnsResult->fetch_assoc()) {
+                            $tableColumns[] = $column['Field'];
+                        }
+                        $columnsResult->free();
+                    }
+
+                    $where = '';
+                    if ($searchTerm !== '' && count($tableColumns) > 0) {
+                        $parts = [];
+                        $escapedSearch = $dbc->real_escape_string($searchTerm);
+                        foreach ($tableColumns as $column) {
+                            $parts[] = "`{$column}` LIKE '%{$escapedSearch}%'";
+                        }
+                        $where = ' WHERE ' . implode(' OR ', $parts);
+                    }
+
+                    $countSql = "SELECT COUNT(*) AS cnt FROM `{$tableEscaped}`" . $where;
+                    $totalRows = 0;
+                    if ($countResult = $dbc->query($countSql)) {
+                        $totalRows = (int)$countResult->fetch_assoc()['cnt'];
+                        $countResult->free();
+                    }
+
+                    $dataSql = "SELECT * FROM `{$tableEscaped}`" . $where;
+                    if ($perPage !== null) {
+                        $offset = ($page - 1) * $perPage;
+                        $dataSql .= " LIMIT {$offset}, {$perPage}";
+                    }
+                    $rows = [];
+                    if ($dataResult = $dbc->query($dataSql)) {
+                        $rows = $dataResult->fetch_all(MYSQLI_ASSOC);
+                        $dataResult->free();
+                    }
+
+                    $startRow = 0;
+                    $endRow = 0;
+                    if ($perPage !== null) {
+                        $startRow = min($totalRows, max(0, ($page - 1) * $perPage) + 1);
+                        $endRow = min($totalRows, $startRow + count($rows) - 1);
+                        if ($totalRows === 0) {
+                            $startRow = 0;
+                            $endRow = 0;
+                        }
+                    } else {
+                        $startRow = count($rows) > 0 ? 1 : 0;
+                        $endRow = count($rows);
+                    }
+
+                    $totalPages = $perPage !== null ? (int)ceil($totalRows / $perPage) : 1;
+                    $currentPage = $perPage !== null ? min($totalPages, max(1, $page)) : 1;
+
+                    $tablePreview = [
+                        'name' => $selectedTable,
+                        'columns' => $tableColumns,
+                        'rows' => $rows,
+                        'total' => $totalRows,
+                        'limit' => $perPage ?? $totalRows,
+                        'start' => $startRow,
+                        'end' => $endRow,
+                        'per_page' => $perPage,
+                        'per_page_label' => $perPageInput,
+                        'page' => $currentPage,
+                        'total_pages' => $totalPages,
+                        'search' => $searchTerm
+                    ];
+                }
+            }
+        }
+
+        $ui->assign('tables', $tables);
+        $ui->assign('selected_table', $selectedTable);
+        $ui->assign('search_term', $searchTerm);
+        $ui->assign('per_page_options', $perPageOptions);
+        $ui->assign('per_page_value', $perPageInput);
+        $ui->assign('browser_error', $browserError);
+        $ui->assign('table_preview', $tablePreview);
+        $ui->display('admin/settings/dbbrowser.tpl');
+        break;
+
+        $ui->assign('tables', $tables);
+        $ui->assign('selected_table', $selectedTable);
+        $ui->assign('browser_error', $browserError);
+        $ui->assign('table_preview', $tablePreview);
+        $ui->display('admin/settings/dbbrowser.tpl');
+        break;
     case 'dbstatus':
         if (!in_array($admin['user_type'], ['SuperAdmin', 'Admin'])) {
             _alert(Lang::T('You do not have permission to access this page'), 'danger', "dashboard");

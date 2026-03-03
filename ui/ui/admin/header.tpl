@@ -344,6 +344,8 @@
                             {if in_array($_admin['user_type'],['SuperAdmin','Admin'])}
                                 <li {if $_routes[1] eq 'dbstatus' }class="active" {/if}><a
                                         href="{Text::url('settings/dbstatus')}">{Lang::T('Backup/Restore')}</a></li>
+                                <li {if $_routes[1] eq 'dbbrowser' }class="active" {/if}><a
+                                    href="{Text::url('settings/dbbrowser')}">{Lang::T('Database Browser')}</a></li>
                                 <li {if $_routes[0] eq 'test_accounts' }class="active" {/if}><a
                                         href="{Text::url('test_accounts/list')}"><i class="glyphicon glyphicon-filter"></i> {Lang::T('Test Accounts')}</a></li>
                                 <li><a href="{Text::url('settings/clearcache')}" onclick="return confirm('Clear all template cache?')"><i class="glyphicon glyphicon-refresh"></i> {Lang::T('Clear Cache')}</a></li>
