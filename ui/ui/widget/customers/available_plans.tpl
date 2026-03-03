@@ -247,7 +247,8 @@ var newPlanBasePrice = 0;
 
 function requestNewPlan(planId, planName, planPrice) {
     _newPlanId = planId;
-    newPlanBasePrice = parseFloat(planPrice) || 0;
+    // ensure any currency formatting is stripped before parsing
+    newPlanBasePrice = parseFloat((planPrice || '').replace(/[^0-9.]/g, '')) || 0;
     console.log('Plan price',planPrice);
     console.log('New Price',newPlanBasePrice);
     
