@@ -267,6 +267,7 @@ function updateNewPlanPrices() {
     if (quantity > 100) quantity = 100;
     
     var totalPrice = (newPlanBasePrice * quantity).toFixed(2);
+    console.log('Total Price', totalPrice);
     
     document.querySelectorAll('.new-plan-price-step').forEach(function(el){ el.textContent = totalPrice; });
     document.getElementById('newPlan_total_price').textContent = totalPrice;
