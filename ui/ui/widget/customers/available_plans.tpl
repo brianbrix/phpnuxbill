@@ -248,6 +248,8 @@ var newPlanBasePrice = 0;
 function requestNewPlan(planId, planName, planPrice) {
     _newPlanId = planId;
     newPlanBasePrice = parseFloat(planPrice) || 0;
+    console.log('Plan price',planPrice);
+    console.log('New Price',newPlanBasePrice);
     
     document.getElementById('newPlanName').textContent = planName;
     document.getElementById('newPlanPrice').textContent = planPrice;
