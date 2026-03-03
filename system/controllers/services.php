@@ -5,6 +5,15 @@
  *  by https://t.me/ibnux
  **/
 _admin();
+
+function normalize_price_input($value)
+{
+    if ($value === null) {
+        return '';
+    }
+    return preg_replace('/\D/', '', (string) $value);
+}
+
 $ui->assign('_title', Lang::T('Hotspot Plans'));
 $ui->assign('_system_menu', 'services');
 
@@ -228,7 +237,7 @@ switch ($action) {
         $data_limit = _post('data_limit');
         $data_unit = _post('data_unit');
         $id_bw = _post('id_bw');
-        $price = _post('price');
+        $price = normalize_price_input(_post('price'));
         $sharedusers = _post('sharedusers');
         $validity = _post('validity');
         $validity_unit = _post('validity_unit');
@@ -319,8 +328,8 @@ switch ($action) {
         $plan_type = _post('plan_type');
         $id_bw = _post('id_bw');
         $typebp = _post('typebp');
-        $price = _post('price');
-        $price_old = _post('price_old');
+        $price = normalize_price_input(_post('price'));
+        $price_old = normalize_price_input(_post('price_old'));
         $limit_type = _post('limit_type');
         $time_limit = _post('time_limit');
         $time_unit = _post('time_unit');
@@ -609,7 +618,7 @@ switch ($action) {
         $plan_type = _post('plan_type');
         $radius = _post('radius');
         $id_bw = _post('id_bw');
-        $price = _post('price');
+        $price = normalize_price_input(_post('price'));
         $validity = _post('validity');
         $validity_unit = _post('validity_unit');
         $routers = _post('routers');
@@ -709,8 +718,8 @@ switch ($action) {
         $plan_type = _post('plan_type');
         $name = _post('name_plan');
         $id_bw = _post('id_bw');
-        $price = _post('price');
-        $price_old = _post('price_old');
+        $price = normalize_price_input(_post('price'));
+        $price_old = normalize_price_input(_post('price_old'));
         $validity = _post('validity');
         $validity_unit = _post('validity_unit');
         $routers = _post('routers');
@@ -845,8 +854,8 @@ switch ($action) {
     case 'balance-edit-post':
         $id = _post('id');
         $name = _post('name');
-        $price = _post('price');
-        $price_old = _post('price_old');
+        $price = normalize_price_input(_post('price'));
+        $price_old = normalize_price_input(_post('price_old'));
         $enabled = _post('enabled');
         $prepaid = _post('prepaid');
 
@@ -882,7 +891,7 @@ switch ($action) {
         break;
     case 'balance-add-post':
         $name = _post('name');
-        $price = _post('price');
+        $price = normalize_price_input(_post('price'));
         $enabled = _post('enabled');
 
         $msg = '';
@@ -1101,7 +1110,7 @@ switch ($action) {
         $plan_type = _post('plan_type');
         $radius = _post('radius');
         $id_bw = _post('id_bw');
-        $price = _post('price');
+        $price = normalize_price_input(_post('price'));
         $validity = _post('validity');
         $validity_unit = _post('validity_unit');
         $routers = _post('routers');
@@ -1201,8 +1210,8 @@ switch ($action) {
         $plan_type = _post('plan_type');
         $name = _post('name_plan');
         $id_bw = _post('id_bw');
-        $price = _post('price');
-        $price_old = _post('price_old');
+        $price = normalize_price_input(_post('price'));
+        $price_old = normalize_price_input(_post('price_old'));
         $validity = _post('validity');
         $validity_unit = _post('validity_unit');
         $routers = _post('routers');
