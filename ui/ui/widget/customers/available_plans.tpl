@@ -247,8 +247,9 @@ var newPlanBasePrice = 0;
 
 function requestNewPlan(planId, planName, planPrice) {
     _newPlanId = planId;
-    // ensure any currency formatting is stripped before parsing
-    newPlanBasePrice = parseFloat((planPrice || '').replace(/[^0-9.]/g, '')) || 0;
+    // parse numeric portion from currency-formatted price (e.g. "Ksh. 10")
+    var match = (planPrice || '').match(/(\d+(?:\.\d+)?)/);
+    newPlanBasePrice = match ? parseFloat(match[0]) : 0;
     console.log('Plan price',planPrice);
     console.log('New Price',newPlanBasePrice);
     
