@@ -309,141 +309,167 @@
 
     <!-- Recharge Request JavaScript -->
     <script>
-    console.log('Recharge modal script loaded');
-    
-    // Store currently selected bill ID
-    var currentBillId = null;
-    
-    // Wait for jQuery to be available
-    function initRechargeModal() {
-        if (typeof jQuery === 'undefined') {
-            console.warn('jQuery not yet loaded, retrying...');
-            setTimeout(initRechargeModal, 100);
-            return;
-        }
-        
-        console.log('jQuery available, initializing recharge modal');
-        
+    (function() {
+        var modal = document.getElementById('rechargeRequestModal');
+        if (!modal) return;
+
+        var currentBillId = null;
         var rechargeBasePrice = 0;
+        var manualBackdrop = null;
+
+        function formatPrice(value) {
+            var num = Number(value);
+            return isNaN(num) ? '0.00' : num.toFixed(2);
+        }
 
         function updateRechargePrices() {
-            console.log('updateRechargePrices called, rechargeBasePrice:', rechargeBasePrice);
-            var quantityInputNode = document.getElementById('recharge_quantity');
-            var quantity = quantityInputNode ? parseInt(quantityInputNode.value) || 1 : 1;
-            console.log('Quantity:', quantity);
+            var quantityInput = document.getElementById('recharge_quantity');
+            var quantity = quantityInput ? parseInt(quantityInput.value, 10) || 1 : 1;
             if (quantity < 1) quantity = 1;
             if (quantity > 100) quantity = 100;
-            
-            var totalPrice = (rechargeBasePrice * quantity).toFixed(2);
-            console.log('Calculated totalPrice:', totalPrice);
-            
-            document.getElementById('recharge_plan_price_mpesa').textContent = totalPrice;
-            document.getElementById('recharge_plan_price_airtel').textContent = totalPrice;
-            document.getElementById('recharge_total_price').textContent = totalPrice;
+
+            var totalPrice = formatPrice(rechargeBasePrice * quantity);
+            var mpesaPrice = document.getElementById('recharge_plan_price_mpesa');
+            var airtelPrice = document.getElementById('recharge_plan_price_airtel');
+            var totalPriceEl = document.getElementById('recharge_total_price');
+            if (mpesaPrice) mpesaPrice.textContent = totalPrice;
+            if (airtelPrice) airtelPrice.textContent = totalPrice;
+            if (totalPriceEl) totalPriceEl.textContent = totalPrice;
         }
 
-        var requestBtns = document.querySelectorAll('[id^="requestRechargeBtn_"]');
-        console.log('Found ' + requestBtns.length + ' request buttons');
+        function openRechargeModal() {
+            if (window.jQuery && window.jQuery.fn && window.jQuery.fn.modal) {
+                window.jQuery('#rechargeRequestModal').modal('show');
+                return;
+            }
 
-        requestBtns.forEach(function(btn) {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                var billId = this.getAttribute('data-bill-id');
-                var planName = this.getAttribute('data-plan-name');
-                var planPrice = this.getAttribute('data-plan-price');
-                console.log('Request button clicked - billId:', billId, 'planName:', planName, 'raw price:', planPrice, 'type:', typeof planPrice);
+            if (!modal.classList.contains('in')) {
+                modal.classList.add('in');
+                modal.style.display = 'block';
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+                manualBackdrop = document.createElement('div');
+                manualBackdrop.className = 'modal-backdrop fade in';
+                document.body.appendChild(manualBackdrop);
+            }
+        }
 
-                currentBillId = billId;
-                rechargeBasePrice = planPrice ? parseFloat(planPrice.toString().replace(/[^\d.]/g, '')) : 0;
-                console.log('Parsed rechargeBasePrice:', rechargeBasePrice);
+        function closeRechargeModal() {
+            if (window.jQuery && window.jQuery.fn && window.jQuery.fn.modal) {
+                window.jQuery('#rechargeRequestModal').modal('hide');
+                return;
+            }
 
-                document.getElementById('recharge_plan_name').textContent = planName;
-                document.getElementById('recharge_base_price').textContent = rechargeBasePrice.toFixed(2);
-                document.getElementById('recharge_message').value = '';
-                document.getElementById('recharge_quantity').value = 1;
-
-                updateRechargePrices();
-
-                if (typeof jQuery !== 'undefined') {
-                    jQuery('#rechargeRequestModal').modal('show');
-                    console.log('Modal shown via jQuery');
-                } else {
-                    console.warn('jQuery not available');
+            if (modal.classList.contains('in')) {
+                modal.classList.remove('in');
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
+                if (manualBackdrop && manualBackdrop.parentNode) {
+                    manualBackdrop.parentNode.removeChild(manualBackdrop);
                 }
-            });
-        });
-
-        var quantityInput = document.getElementById('recharge_quantity');
-        if (quantityInput) {
-            quantityInput.addEventListener('change', updateRechargePrices);
-            quantityInput.addEventListener('keyup', updateRechargePrices);
-            quantityInput.addEventListener('input', updateRechargePrices);
+                manualBackdrop = null;
+            }
         }
 
-        var submitBtn = document.getElementById('submitRechargeBtn');
-        if (submitBtn) {
-            submitBtn.addEventListener('click', function() {
-                console.log('Submit button clicked, currentBillId:', currentBillId);
-                submitRechargeRequest();
-            });
-        }
-    }
+        function submitRechargeRequest() {
+            var submitBtn = document.getElementById('submitRechargeBtn');
+            if (!currentBillId) {
+                alert('Please select a plan before sending the request.');
+                return;
+            }
 
-    window.submitRechargeRequest = function() {
-        console.log('submitRechargeRequest called');
-        const billId = currentBillId;
-        const message = document.getElementById('recharge_message').value;
-        const quantity = parseInt(document.getElementById('recharge_quantity').value) || 1;
-        
-        console.log('Sending recharge request - billId:', billId, 'message:', message, 'quantity:', quantity);
-        
-        if (!billId) {
-            alert('Bill ID is missing!');
-            console.error('No bill ID set');
-            return;
-        }
-        
-        document.getElementById('submitRechargeBtn').disabled = true;
-        
-        if (typeof jQuery !== 'undefined') {
-            console.log('Making AJAX POST to: {Text::url('autoload_user/request_recharge')}');
-            jQuery.ajax({
-                type: 'POST',
-                url: '{Text::url('autoload_user/request_recharge')}',
-                data: {
-                    bill_id: billId,
-                    message: message,
-                    quantity: quantity
+            if (submitBtn) submitBtn.disabled = true;
+            var message = document.getElementById('recharge_message');
+            var quantityInput = document.getElementById('recharge_quantity');
+            var payload = new URLSearchParams();
+            payload.append('bill_id', currentBillId);
+            payload.append('message', message ? message.value : '');
+            var quantity = quantityInput ? parseInt(quantityInput.value, 10) || 1 : 1;
+            payload.append('quantity', quantity);
+
+            fetch('{Text::url('autoload_user/request_recharge')}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                dataType: 'json',
-                success: function(resp) {
-                    console.log('AJAX success, response:', resp);
-                    if (resp.status === 'success') {
-                        alert('Recharge request sent successfully!');
-                        jQuery('#rechargeRequestModal').modal('hide');
-                        setTimeout(() => location.reload(), 1500);
+                body: payload.toString()
+            })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.status === 'success') {
+                        alert(data.message || 'Recharge request sent successfully!');
+                        closeRechargeModal();
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1500);
                     } else {
-                        alert('Error: ' + (resp.message || 'Failed to send request'));
-                        document.getElementById('submitRechargeBtn').disabled = false;
+                        alert('Error: ' + (data.message || 'Failed to send request'));
                     }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error('AJAX error - textStatus:', textStatus, 'errorThrown:', errorThrown);
-                    console.error('Response text:', jqXHR.responseText);
-                    alert('Error: ' + textStatus);
-                    document.getElementById('submitRechargeBtn').disabled = false;
-                }
-            });
-        } else {
-            alert('jQuery is not loaded!');
-            document.getElementById('submitRechargeBtn').disabled = false;
+                })
+                .catch(function(error) {
+                    console.error('Recharge request failed', error);
+                    alert('Error sending request. Check console for details.');
+                })
+                .finally(function() {
+                    if (submitBtn) submitBtn.disabled = false;
+                });
         }
-    };
-    
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initRechargeModal);
-    } else {
-        initRechargeModal();
-    }
+
+        function initRechargeModal() {
+            var requestBtns = document.querySelectorAll('[id^="requestRechargeBtn_"]');
+            requestBtns.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentBillId = btn.dataset.billId || btn.getAttribute('data-bill-id');
+                    var planName = btn.dataset.planName || btn.getAttribute('data-plan-name') || '';
+                    var planPrice = btn.dataset.planPrice || btn.getAttribute('data-plan-price') || '0';
+                    rechargeBasePrice = parseFloat(String(planPrice).replace(/[^\d.]/g, '')) || 0;
+                    var planNameEl = document.getElementById('recharge_plan_name');
+                    var basePriceEl = document.getElementById('recharge_base_price');
+                    if (planNameEl) planNameEl.textContent = planName;
+                    if (basePriceEl) basePriceEl.textContent = formatPrice(rechargeBasePrice);
+                    if (document.getElementById('recharge_message')) {
+                        document.getElementById('recharge_message').value = '';
+                    }
+                    if (document.getElementById('recharge_quantity')) {
+                        document.getElementById('recharge_quantity').value = 1;
+                    }
+                    updateRechargePrices();
+                    openRechargeModal();
+                });
+            });
+
+            var quantityInput = document.getElementById('recharge_quantity');
+            if (quantityInput) {
+                ['change', 'keyup', 'input'].forEach(function(evt) {
+                    quantityInput.addEventListener(evt, updateRechargePrices);
+                });
+            }
+
+            var submitBtn = document.getElementById('submitRechargeBtn');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function() {
+                    submitRechargeRequest();
+                });
+            }
+
+            var closeButtons = modal.querySelectorAll('[data-dismiss="modal"]');
+            closeButtons.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeRechargeModal();
+                });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initRechargeModal);
+        } else {
+            initRechargeModal();
+        }
+    })();
     </script>
 {/if}
