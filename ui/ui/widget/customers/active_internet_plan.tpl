@@ -197,15 +197,21 @@
     {foreach $_bills as $_bill}
         {if $_bill['type'] == 'Hotspot' && $_bill['status'] == 'on' && $_c['hs_auth_method'] != 'hchap'}
             <script>
-                setTimeout(() => {
-                    $.ajax({
-                        url: "{Text::url('autoload_user/isLogin/')}{$_bill['id']}",
-                        cache: false,
-                        success: function(msg) {
-                            $("#login_status_{$_bill['id']}").html(msg);
-                        }
-                    });
-                }, 2000);
+                (function waitForJQueryLoginStatus() {
+                    if (typeof jQuery === 'undefined') {
+                        setTimeout(waitForJQueryLoginStatus, 100);
+                        return;
+                    }
+                    setTimeout(function() {
+                        jQuery.ajax({
+                            url: "{Text::url('autoload_user/isLogin/')}{$_bill['id']}",
+                            cache: false,
+                            success: function(msg) {
+                                jQuery("#login_status_{$_bill['id']}").html(msg);
+                            }
+                        });
+                    }, 2000);
+                })();
             </script>
         {/if}
     {/foreach}
@@ -318,51 +324,12 @@
         
         console.log('jQuery available, initializing recharge modal');
         
-        // Handle Request button clicks
-        document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, setting up recharge request listeners');
-        
-        // Store base price for calculations
         var rechargeBasePrice = 0;
-        
-        // Find all request buttons and attach listeners
-        var requestBtns = document.querySelectorAll('[id^="requestRechargeBtn_"]');
-        console.log('Found ' + requestBtns.length + ' request buttons');
-        
-        requestBtns.forEach(function(btn) {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                var billId = this.getAttribute('data-bill-id');
-                var planName = this.getAttribute('data-plan-name');
-                var planPrice = this.getAttribute('data-plan-price');
-                console.log('Request button clicked - billId:', billId, 'planName:', planName, 'raw price:', planPrice, 'type:', typeof planPrice);
-                
-                currentBillId = billId;
-                rechargeBasePrice = planPrice ? parseFloat(planPrice.toString().replace(/[^\d.]/g, '')) : 0;
-                console.log('Parsed rechargeBasePrice:', rechargeBasePrice);
-                
-                document.getElementById('recharge_plan_name').textContent = planName;
-                document.getElementById('recharge_base_price').textContent = rechargeBasePrice.toFixed(2);
-                document.getElementById('recharge_message').value = '';
-                document.getElementById('recharge_quantity').value = 1;
-                
-                // Update prices for initial display
-                updateRechargePrices();
-                
-                // Show modal
-                if (typeof jQuery !== 'undefined') {
-                    jQuery('#rechargeRequestModal').modal('show');
-                    console.log('Modal shown via jQuery');
-                } else {
-                    console.warn('jQuery not available');
-                }
-            });
-        });
-        
-        // Handle quantity changes
+
         function updateRechargePrices() {
             console.log('updateRechargePrices called, rechargeBasePrice:', rechargeBasePrice);
-            var quantity = parseInt(document.getElementById('recharge_quantity').value) || 1;
+            var quantityInputNode = document.getElementById('recharge_quantity');
+            var quantity = quantityInputNode ? parseInt(quantityInputNode.value) || 1 : 1;
             console.log('Quantity:', quantity);
             if (quantity < 1) quantity = 1;
             if (quantity > 100) quantity = 100;
@@ -374,22 +341,54 @@
             document.getElementById('recharge_plan_price_airtel').textContent = totalPrice;
             document.getElementById('recharge_total_price').textContent = totalPrice;
         }
-        
-        // Add listener to quantity input
+
+        var requestBtns = document.querySelectorAll('[id^="requestRechargeBtn_"]');
+        console.log('Found ' + requestBtns.length + ' request buttons');
+
+        requestBtns.forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                var billId = this.getAttribute('data-bill-id');
+                var planName = this.getAttribute('data-plan-name');
+                var planPrice = this.getAttribute('data-plan-price');
+                console.log('Request button clicked - billId:', billId, 'planName:', planName, 'raw price:', planPrice, 'type:', typeof planPrice);
+
+                currentBillId = billId;
+                rechargeBasePrice = planPrice ? parseFloat(planPrice.toString().replace(/[^\d.]/g, '')) : 0;
+                console.log('Parsed rechargeBasePrice:', rechargeBasePrice);
+
+                document.getElementById('recharge_plan_name').textContent = planName;
+                document.getElementById('recharge_base_price').textContent = rechargeBasePrice.toFixed(2);
+                document.getElementById('recharge_message').value = '';
+                document.getElementById('recharge_quantity').value = 1;
+
+                updateRechargePrices();
+
+                if (typeof jQuery !== 'undefined') {
+                    jQuery('#rechargeRequestModal').modal('show');
+                    console.log('Modal shown via jQuery');
+                } else {
+                    console.warn('jQuery not available');
+                }
+            });
+        });
+
         var quantityInput = document.getElementById('recharge_quantity');
         if (quantityInput) {
             quantityInput.addEventListener('change', updateRechargePrices);
             quantityInput.addEventListener('keyup', updateRechargePrices);
             quantityInput.addEventListener('input', updateRechargePrices);
         }
-        
-        // Handle submit button
-        document.getElementById('submitRechargeBtn').addEventListener('click', function() {
-            console.log('Submit button clicked, currentBillId:', currentBillId);
-            submitRechargeRequest();
-        });
-    });
-    
+
+        var submitBtn = document.getElementById('submitRechargeBtn');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+                console.log('Submit button clicked, currentBillId:', currentBillId);
+                submitRechargeRequest();
+            });
+        }
+    }
+
     window.submitRechargeRequest = function() {
         console.log('submitRechargeRequest called');
         const billId = currentBillId;
@@ -441,7 +440,6 @@
         }
     };
     
-    // Initialize when document is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initRechargeModal);
     } else {
