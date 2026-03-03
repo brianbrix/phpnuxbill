@@ -178,7 +178,7 @@
                             <a class="btn btn-primary pull-right btn-sm"
                                 href="{Text::url('home&recharge=', $_bill['id'], '&stoken=', App::getToken())}"
                                 onclick="return ask(this, '{Lang::T('Recharge')}?')">{Lang::T('Recharge')}</a>
-                            <a class="btn btn-info pull-right btn-sm" style="margin-right: 5px;" id="requestRechargeBtn_{$_bill['id']}" data-bill-id="{$_bill['id']}" data-plan-name="{$_bill['namebp']|escape:'html'}" data-plan-price="{Lang::moneyFormat($_bill['price'])}">
+                            <a class="btn btn-info pull-right btn-sm" style="margin-right: 5px;" id="requestRechargeBtn_{$_bill['id']}" data-bill-id="{$_bill['id']}" data-plan-name="{$_bill['namebp']|escape:'html'}" data-plan-price="{$_bill['price']}">
                                 <i class="glyphicon glyphicon-plus"></i> {Lang::T('Request')}
                             </a>
                             <a class="btn btn-warning text-black pull-right btn-sm"
