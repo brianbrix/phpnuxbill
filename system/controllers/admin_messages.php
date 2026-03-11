@@ -100,7 +100,7 @@ switch ($action) {
         $message = ORM::for_table('tbl_admin_notifications')->find_one($id);
         
         if (!$message) {
-            r2(getUrl('admin_messages/list'), 'e', Lang::T('Message not found'));
+            r2(getUrl('admin_messages/list'), 'e', Lang::T('Message not found in notifications table'));
         }
         
         // Mark as read if unread
@@ -243,7 +243,7 @@ switch ($action) {
             $message->delete();
             r2(getUrl('admin_messages/list'), 's', Lang::T('Message deleted'));
         } else {
-            r2(getUrl('admin_messages/list'), 'e', Lang::T('Message not found'));
+            r2(getUrl('admin_messages/list'), 'e', Lang::T('Message not found in notifications table for delete'));
         }
         break;
     

@@ -14,7 +14,7 @@ switch ($action) {
     case 'view':
         $mail = ORM::for_table('tbl_customers_inbox')->where('customer_id', $user['id'])->find_one($routes['2']);
         if(!$mail){
-            r2(getUrl('mail'), 'e', Lang::T('Message Not Found'));
+            r2(getUrl('mail'), 'e', Lang::T('Message Not Found in customer inbox table'));
         }
         if($mail['date_read'] == null){
             $mail->date_read = date('Y-m-d H:i:s');
