@@ -182,7 +182,19 @@
                     </div>
                 </div>
 
-                <form method="post" action="{Text::url('message_public/submit')}">
+                {if !$is_authenticated && !empty($guest_reply)}
+                    <div class="alert alert-success" id="guest-reply-box">
+                        <i class="fas fa-reply"></i>
+                        <div>
+                            <strong>Admin Reply:</strong><br>
+                            <div style="white-space: pre-wrap;">{$guest_reply['reply_message']}</div>
+                        </div>
+                    </div>
+                {else}
+                    <div id="guest-reply-box" style="display:none;"></div>
+                {/if}
+
+                <form method="post" action="{Text::url('message_public/submit')}&nux-mac={$mac|escape:'url'}&nux-ip={$ip|escape:'url'}">
                     <input type="hidden" name="nux-mac" value="{$mac}">
                     <input type="hidden" name="nux-ip" value="{$ip}">
 
@@ -242,6 +254,53 @@
     <script>
         // Auto-focus the message field
         document.getElementById('message').focus();
+
+        {if !$is_authenticated}
+        (function() {
+            var mac = '{$mac|escape:'javascript'}';
+            var ip = '{$ip|escape:'javascript'}';
+
+            if (!mac && !ip) {
+                return;
+            }
+
+            function renderReply(message) {
+                var box = document.getElementById('guest-reply-box');
+                box.className = 'alert alert-success';
+                box.style.display = 'flex';
+                box.innerHTML = '<i class="fas fa-reply"></i><div><strong>Admin Reply:</strong><br><div style="white-space: pre-wrap;">' +
+                    (message || '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;') +
+                    '</div></div>';
+            }
+
+            function checkReply() {
+                var url = '{Text::url('message_public/check_reply')}&nux-mac=' + encodeURIComponent(mac) + '&nux-ip=' + encodeURIComponent(ip);
+                fetch(url, {
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data && data.status === 'success' && data.has_reply && data.reply) {
+                            renderReply(data.reply.message);
+                            if (window.Notification && Notification.permission === 'granted') {
+                                new Notification('Admin Reply', { body: data.reply.message });
+                            }
+                        }
+                    })
+                    .catch(function() {});
+            }
+
+            if (window.Notification && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+
+            setInterval(checkReply, 30000);
+        })();
+        {/if}
     </script>
 </body>
 </html>

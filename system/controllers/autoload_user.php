@@ -61,6 +61,63 @@ switch ($action) {
             echo '<li><a href="' . getUrl('mail/view/' . $inbox['id']) . '">' . $inbox['subject'] . '<br><sub class="text-muted">' . Lang::dateTimeFormat($inbox['date_created']) . '</sub></a></li>';
         }
         die();
+    case 'inbox_check_new':
+        header('Content-Type: application/json');
+
+        if (empty($_SESSION['last_customer_inbox_check'])) {
+            $_SESSION['last_customer_inbox_check'] = date('Y-m-d H:i:s');
+            echo json_encode([
+                'status' => 'success',
+                'new_count' => 0,
+                'total_unread' => ORM::for_table('tbl_customers_inbox')->where('customer_id', $user['id'])->whereRaw('date_read is null')->count('id'),
+                'latest_message' => null,
+                'timestamp' => date('Y-m-d H:i:s')
+            ]);
+            die();
+        }
+
+        $last_check = $_SESSION['last_customer_inbox_check'];
+
+        $new_count = ORM::for_table('tbl_customers_inbox')
+            ->where('customer_id', $user['id'])
+            ->whereRaw('date_read is null')
+            ->where_gte('date_created', $last_check)
+            ->count('id');
+
+        $total_unread = ORM::for_table('tbl_customers_inbox')
+            ->where('customer_id', $user['id'])
+            ->whereRaw('date_read is null')
+            ->count('id');
+
+        $latest_message = null;
+        if ($new_count > 0) {
+            $latest = ORM::for_table('tbl_customers_inbox')
+                ->selects(['id', 'subject', 'date_created'])
+                ->where('customer_id', $user['id'])
+                ->whereRaw('date_read is null')
+                ->where_gte('date_created', $last_check)
+                ->order_by_desc('date_created')
+                ->find_one();
+
+            if ($latest) {
+                $latest_message = [
+                    'id' => $latest['id'],
+                    'subject' => $latest['subject'],
+                    'date_created' => $latest['date_created']
+                ];
+            }
+        }
+
+        $_SESSION['last_customer_inbox_check'] = date('Y-m-d H:i:s');
+
+        echo json_encode([
+            'status' => 'success',
+            'new_count' => $new_count,
+            'total_unread' => $total_unread,
+            'latest_message' => $latest_message,
+            'timestamp' => date('Y-m-d H:i:s')
+        ]);
+        die();
     case 'language':
         $select = _get('select');
         $folders = [];

@@ -8,12 +8,46 @@
 $ui->assign('_title', 'Send Message');
 
 $action = $routes['1'];
-$mac = _get('nux-mac');
-$ip = _get('nux-ip');
+$mac = trim((string) _get('nux-mac', isset($_SESSION['nux-mac']) ? $_SESSION['nux-mac'] : ''));
+$ip = trim((string) _get('nux-ip', isset($_SESSION['nux-ip']) ? $_SESSION['nux-ip'] : ''));
 
 // Check if user is logged in
 $logged_in_user = User::_info();
 $is_authenticated = !empty($logged_in_user['id']);
+
+function find_guest_reply($mac, $ip)
+{
+    if ($mac === '' && $ip === '') {
+        return null;
+    }
+
+    try {
+        // Security rule:
+        // 1) Prefer MAC identity.
+        // 2) Allow IP-only delivery only when stored reply has no MAC.
+        // 3) Expire old replies to avoid delivery after IP reuse.
+        $expiryMinutes = 120;
+        $query = ORM::for_table('tbl_guest_replies')
+            ->where('status', 'unread')
+            ->where_gte('created_date', date('Y-m-d H:i:s', strtotime('-' . $expiryMinutes . ' minutes')));
+
+        if ($mac !== '' && $ip !== '') {
+            $query->where_raw('(
+                (mac = ? AND ip = ?)
+                OR (mac = ? AND (ip IS NULL OR ip = ""))
+            )', [$mac, $ip, $mac]);
+        } elseif ($mac !== '') {
+            $query->where('mac', $mac);
+        } else {
+            $query->where('ip', $ip)
+                ->where_raw('(mac IS NULL OR mac = "")');
+        }
+
+        return $query->order_by_desc('created_date')->find_one();
+    } catch (Throwable $e) {
+        return null;
+    }
+}
 
 switch ($action) {
     case 'send':
@@ -21,14 +55,61 @@ switch ($action) {
         $ui->assign('mac', htmlspecialchars($mac));
         $ui->assign('ip', htmlspecialchars($ip));
         $ui->assign('is_authenticated', $is_authenticated);
+
+        $guest_reply = null;
+        if (!$is_authenticated) {
+            $reply = find_guest_reply($mac, $ip);
+            if ($reply) {
+                $guest_reply = $reply->as_array();
+                $reply->status = 'read';
+                $reply->read_date = date('Y-m-d H:i:s');
+                $reply->save();
+            }
+        }
+
+        $ui->assign('guest_reply', $guest_reply);
         if ($is_authenticated) {
             $ui->assign('logged_in_user', $logged_in_user);
         }
         $ui->display('message_public.tpl');
         break;
 
+    case 'check_reply':
+        header('Content-Type: application/json');
+        $mac = trim((string) _get('nux-mac', isset($_SESSION['nux-mac']) ? $_SESSION['nux-mac'] : ''));
+        $ip = trim((string) _get('nux-ip', isset($_SESSION['nux-ip']) ? $_SESSION['nux-ip'] : ''));
+
+        if ($is_authenticated) {
+            echo json_encode(['status' => 'success', 'has_reply' => false]);
+            die();
+        }
+
+        $reply = find_guest_reply($mac, $ip);
+        if (!$reply) {
+            echo json_encode(['status' => 'success', 'has_reply' => false]);
+            die();
+        }
+
+        $reply->status = 'read';
+        $reply->read_date = date('Y-m-d H:i:s');
+        $reply->save();
+
+        echo json_encode([
+            'status' => 'success',
+            'has_reply' => true,
+            'reply' => [
+                'id' => $reply['id'],
+                'message' => $reply['reply_message'],
+                'created_date' => $reply['created_date']
+            ]
+        ]);
+        die();
+
     case 'submit':
         // Process the message submission
+        $mac = trim((string) _post('nux-mac', _get('nux-mac', isset($_SESSION['nux-mac']) ? $_SESSION['nux-mac'] : '')));
+        $ip = trim((string) _post('nux-ip', _get('nux-ip', isset($_SESSION['nux-ip']) ? $_SESSION['nux-ip'] : '')));
+
         if ($_app_stage == 'Demo') {
             r2(getUrl('message_public/send') . '?nux-mac=' . urlencode($mac) . '&nux-ip=' . urlencode($ip), 'e', 'Demo mode - message not sent');
         }
@@ -67,6 +148,7 @@ switch ($action) {
             ($is_authenticated ? "Username: " . $logged_in_user['username'] . "\n" : "") .
             "\nMessage:\n" . $message_text;
         $notif->type = $message_type;
+        $notif->related_id = $is_authenticated ? (int) $logged_in_user['id'] : 0;
         $notif->status = 'unread';
         $notif->created_date = date('Y-m-d H:i:s');
         $notif->save();

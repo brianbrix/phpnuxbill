@@ -60,6 +60,10 @@
                                                 <span class="label label-warning">
                                                     <i class="glyphicon glyphicon-comment"></i> {Lang::T('Guest Message')}
                                                 </span>
+                                            {elseif $msg['type'] == 'user_message'}
+                                                <span class="label label-primary">
+                                                    <i class="glyphicon glyphicon-user"></i> {Lang::T('User Message')}
+                                                </span>
                                             {elseif $msg['type'] == 'recharge_request'}
                                                 <span class="label label-info">
                                                     <i class="glyphicon glyphicon-refresh"></i> {Lang::T('Recharge Request')}

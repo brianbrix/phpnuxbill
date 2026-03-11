@@ -32,6 +32,10 @@
                                             <span class="label label-warning">
                                                 <i class="glyphicon glyphicon-comment"></i> {Lang::T('Guest Message')}
                                             </span>
+                                        {elseif $message['type'] == 'user_message'}
+                                            <span class="label label-primary">
+                                                <i class="glyphicon glyphicon-user"></i> {Lang::T('Authenticated User Message')}
+                                            </span>
                                         {elseif $message['type'] == 'recharge_request'}
                                             <span class="label label-info">
                                                 <i class="glyphicon glyphicon-refresh"></i> {Lang::T('Recharge Request')}
@@ -84,6 +88,31 @@
                                         {Lang::T('View Request')}
                                     </a>
                                 {/if}
+                            </div>
+                        {/if}
+
+                        {if ($message['type'] == 'user_message' && $message['related_id'] > 0) || $message['type'] == 'guest_message'}
+                            <div class="panel panel-success">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">{Lang::T('Reply to Sender')}</h4>
+                                </div>
+                                <div class="panel-body">
+                                    <form method="post" action="{Text::url('admin_messages/reply/', $message['id'])}">
+                                        <input type="hidden" name="csrf_token" value="{$csrf_token}">
+                                        <div class="form-group">
+                                            <label for="reply_message">{Lang::T('Your Reply')}</label>
+                                            <textarea class="form-control" name="reply_message" id="reply_message" rows="4" required placeholder="{Lang::T('Write your reply to the customer')}..."></textarea>
+                                            {if $message['type'] == 'guest_message'}
+                                                <small class="text-muted">{Lang::T('For guest users, this is delivered by MAC/IP on the public message page when they reconnect or refresh.')}</small>
+                                            {else}
+                                                <small class="text-muted">{Lang::T('This sends an inbox message and triggers a push-style notification in the customer portal.')}</small>
+                                            {/if}
+                                        </div>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="glyphicon glyphicon-send"></i> {Lang::T('Send Reply')}
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         {/if}
                     </div>

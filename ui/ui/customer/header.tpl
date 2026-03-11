@@ -206,3 +206,83 @@
                         });
                     </script>
 {/if}
+
+                <script>
+                    (function() {
+                        if (!window.fetch) {
+                            return;
+                        }
+
+                        var notificationAllowed = false;
+
+                        if ('Notification' in window) {
+                            if (Notification.permission === 'granted') {
+                                notificationAllowed = true;
+                            } else if (Notification.permission === 'default') {
+                                Notification.requestPermission().then(function(permission) {
+                                    notificationAllowed = (permission === 'granted');
+                                });
+                            }
+                        }
+
+                        function showInboxNotification(data) {
+                            var subject = (data.latest_message && data.latest_message.subject) ? data.latest_message.subject : 'New message in your inbox';
+                            var inboxUrl = data.latest_message && data.latest_message.id
+                                ? '{Text::url('mail/view/')}' + data.latest_message.id
+                                : '{Text::url('mail')}';
+
+                            if (window.Swal) {
+                                Swal.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'info',
+                                    title: 'New Admin Reply',
+                                    html: '<strong>' + data.new_count + '</strong> new inbox message(s)<br><small>' + subject + '</small>',
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'Open Inbox',
+                                    timer: 10000,
+                                    timerProgressBar: true
+                                }).then(function(result) {
+                                    if (result.isConfirmed) {
+                                        window.location.href = inboxUrl;
+                                    }
+                                });
+                            }
+
+                            if (notificationAllowed && data.latest_message) {
+                                var browserNotification = new Notification('New Inbox Message', {
+                                    body: subject,
+                                    icon: appUrl + '/ui/ui/images/logo.png'
+                                });
+
+                                browserNotification.onclick = function() {
+                                    window.focus();
+                                    window.location.href = inboxUrl;
+                                    browserNotification.close();
+                                };
+                            }
+                        }
+
+                        function checkInboxNew() {
+                            fetch('{Text::url('autoload_user/inbox_check_new')}', {
+                                method: 'GET',
+                                credentials: 'same-origin',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            })
+                                .then(function(res) { return res.json(); })
+                                .then(function(data) {
+                                    if (data && data.status === 'success' && Number(data.new_count) > 0) {
+                                        showInboxNotification(data);
+                                    }
+                                })
+                                .catch(function() {
+                                    // Ignore polling errors to avoid noisy UI.
+                                });
+                        }
+
+                        checkInboxNew();
+                        setInterval(checkInboxNew, 45000);
+                    })();
+                </script>

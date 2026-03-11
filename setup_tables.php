@@ -40,6 +40,24 @@ CREATE TABLE IF NOT EXISTS `tbl_admin_notifications` (
   KEY `created_date` (`created_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+-- Table: tbl_guest_replies
+CREATE TABLE IF NOT EXISTS `tbl_guest_replies` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `source_message_id` int(11) DEFAULT NULL,
+  `mac` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ip` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `reply_message` text COLLATE utf8_unicode_ci,
+  `status` enum('unread','read') COLLATE utf8_unicode_ci DEFAULT 'unread',
+  `created_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `read_date` datetime NULL,
+  `admin_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `status` (`status`),
+  KEY `mac` (`mac`),
+  KEY `ip` (`ip`),
+  KEY `created_date` (`created_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 -- Alter tbl_user_recharges to add is_archived column if it doesn't exist
 ALTER TABLE `tbl_user_recharges` ADD COLUMN `is_archived` tinyint(1) DEFAULT 0 AFTER `status`;
 

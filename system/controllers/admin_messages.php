@@ -13,9 +13,47 @@ $action = $routes['1'];
 $admin = Admin::_info();
 $ui->assign('_admin', $admin);
 
+function ensure_guest_reply_table()
+{
+    ORM::raw_execute("CREATE TABLE IF NOT EXISTS `tbl_guest_replies` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `source_message_id` int(11) DEFAULT NULL,
+        `mac` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+        `ip` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+        `reply_message` text COLLATE utf8_unicode_ci,
+        `status` enum('unread','read') COLLATE utf8_unicode_ci DEFAULT 'unread',
+        `created_date` datetime DEFAULT CURRENT_TIMESTAMP,
+        `read_date` datetime NULL,
+        `admin_id` int(11) DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        KEY `status` (`status`),
+        KEY `mac` (`mac`),
+        KEY `ip` (`ip`),
+        KEY `created_date` (`created_date`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci");
+}
+
+function extract_guest_identity($messageBody)
+{
+    $mac = '';
+    $ip = '';
+
+    if (preg_match('/^MAC:\s*(.+)$/mi', $messageBody, $macMatch)) {
+        $mac = trim($macMatch[1]);
+    }
+
+    if (preg_match('/^IP:\s*(.+)$/mi', $messageBody, $ipMatch)) {
+        $ip = trim($ipMatch[1]);
+    }
+
+    return ['mac' => $mac, 'ip' => $ip];
+}
+
 switch ($action) {
     case 'list':
     default:
+        $ui->assign('csrf_token', Csrf::generateAndStoreToken());
+
         // Get filter from query string
         $filter = _get('filter', 'unread');
         $ui->assign('filter', $filter);
@@ -43,6 +81,8 @@ switch ($action) {
         break;
         
     case 'view':
+        $ui->assign('csrf_token', Csrf::generateAndStoreToken());
+
         $id = $routes['2'];
         $message = ORM::for_table('tbl_admin_notifications')->find_one($id);
         
@@ -59,6 +99,68 @@ switch ($action) {
         
         $ui->assign('message', $message->as_array());
         $ui->display('admin/admin_messages/view.tpl');
+        break;
+
+    case 'reply':
+        $id = $routes['2'];
+        $csrf_token = _post('csrf_token');
+        if (!Csrf::check($csrf_token)) {
+            r2(getUrl('admin_messages/view/', $id), 'e', Lang::T('Invalid or Expired CSRF Token') . '.');
+        }
+
+        $message = ORM::for_table('tbl_admin_notifications')->find_one($id);
+        if (!$message) {
+            r2(getUrl('admin_messages/list'), 'e', Lang::T('Message not found'));
+        }
+
+        $reply_text = trim((string) _post('reply_message'));
+        if ($reply_text === '') {
+            r2(getUrl('admin_messages/view/', $id), 'e', Lang::T('Reply message cannot be empty'));
+        }
+
+        if ($message['type'] === 'user_message' && !empty($message['related_id'])) {
+            $target_customer = ORM::for_table('tbl_customers')->find_one($message['related_id']);
+            if (!$target_customer) {
+                r2(getUrl('admin_messages/view/', $id), 'e', Lang::T('Sender account not found'));
+            }
+
+            $subject = Lang::T('Reply from Admin');
+            Message::addToInbox(
+                $target_customer['id'],
+                $subject,
+                $reply_text,
+                $admin['fullname'] ?: $admin['username']
+            );
+        } elseif ($message['type'] === 'guest_message') {
+            ensure_guest_reply_table();
+            $identity = extract_guest_identity($message['message']);
+
+            if ($identity['mac'] === '' && $identity['ip'] === '') {
+                r2(getUrl('admin_messages/view/', $id), 'e', Lang::T('Cannot find guest MAC/IP in the original message'));
+            }
+
+            $guestReply = ORM::for_table('tbl_guest_replies')->create();
+            $guestReply->source_message_id = (int) $message['id'];
+            $guestReply->mac = $identity['mac'];
+            $guestReply->ip = $identity['ip'];
+            $guestReply->reply_message = $reply_text;
+            $guestReply->status = 'unread';
+            $guestReply->created_date = date('Y-m-d H:i:s');
+            $guestReply->admin_id = (int) $admin['id'];
+            $guestReply->save();
+        } else {
+            r2(getUrl('admin_messages/view/', $id), 'e', Lang::T('This sender cannot receive replies'));
+        }
+
+        $message->status = 'read';
+        if (empty($message['read_date'])) {
+            $message->read_date = date('Y-m-d H:i:s');
+        }
+        $message->save();
+
+        _log('Admin replied to message #' . $message['id'], 'Message', $admin['id']);
+
+        r2(getUrl('admin_messages/view/', $id), 's', Lang::T('Reply sent successfully'));
         break;
         
     case 'mark_read':
