@@ -105,6 +105,7 @@
                                 <th>{Lang::T('Balance')}</th>
                                 <th>{Lang::T('Contact')}</th>
                                 <th>{Lang::T('Package')}</th>
+                                <th>{Lang::T('Data Usage')}</th>
                                 <th>{Lang::T('Service Type')}</th>
                                 <th>PPPOE</th>
                                 <th>{Lang::T('Status')}</th>
@@ -145,6 +146,7 @@
                                 <td align="center" api-get-text="{Text::url('autoload/plan_is_active/')}{$ds['id']}">
                                     <span class="label label-default">&bull;</span>
                                 </td>
+                                <td align="center">{$ds['data_usage_formatted']|default:'0 B'}</td>
                                 <td>{$ds['service_type']}</td>
                                 <td>
                                     {$ds['pppoe_username']}

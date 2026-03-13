@@ -472,7 +472,23 @@ switch ($action) {
                     $ui->assign('activation', $activation);
                     break;
             }
-            $ui->assign('packages', User::_billing($customer['id']));
+            $packages = User::_billing($customer['id']);
+            
+            // Add data usage information to each package
+            foreach ($packages as &$package) {
+                try {
+                    // Get usage from recharged date until now or expiration
+                    $date_from = $package['recharged_on'];
+                    $date_to = ($package['expiration'] < date('Y-m-d')) ? $package['expiration'] : date('Y-m-d');
+                    
+                    $usage = Usage::getCustomerUsage($customer['id'], $date_from, $date_to);
+                    $package['data_usage_formatted'] = Usage::formatBytes($usage['data_total']);
+                } catch (Exception $e) {
+                    $package['data_usage_formatted'] = '0 B';
+                }
+            }
+            
+            $ui->assign('packages', $packages);
             $ui->assign('v', $v);
             $ui->assign('d', $customer);
             $ui->assign('customFields', $customFields);
@@ -1016,6 +1032,32 @@ switch ($action) {
             die();
         }
         $d = Paginator::findMany($query, ['search' => $search], 30, $append_url);
+        
+        // Add data usage information to each customer
+        foreach ($d as &$customer) {
+            try {
+                // Get customer's active plans to determine the date range
+                $activePlans = ORM::for_table('tbl_user_recharges')
+                    ->where('customer_id', $customer['id'])
+                    ->where('status', 'on')
+                    ->order_by_desc('recharged_on')
+                    ->find_many();
+                
+                $total_usage = 0;
+                foreach ($activePlans as $plan) {
+                    $date_from = $plan['recharged_on'];
+                    $date_to = ($plan['expiration'] < date('Y-m-d')) ? $plan['expiration'] : date('Y-m-d');
+                    
+                    $usage = Usage::getCustomerUsage($customer['id'], $date_from, $date_to);
+                    $total_usage += $usage['data_total'];
+                }
+                
+                $customer['data_usage_formatted'] = Usage::formatBytes($total_usage);
+            } catch (Exception $e) {
+                $customer['data_usage_formatted'] = '0 B';
+            }
+        }
+        
         $ui->assign('d', $d);
         $ui->assign('statuses', ORM::for_table('tbl_customers')->getEnum("status"));
         $ui->assign('filter', $filter);

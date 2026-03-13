@@ -274,6 +274,11 @@
                             <li class="list-group-item">
                                 {$package['routers']} <span class="pull-right">{$package['method']}</span>
                             </li>
+                            <li class="list-group-item">
+                                <b>{Lang::T('Data Usage (Current Period)')}</b> <span class="pull-right">
+                                    {$package['data_usage_formatted']|default:'0 B'}
+                                </span>
+                            </li>
                         </ul>
                         <div class="row">
                             <div class="col-xs-3">
