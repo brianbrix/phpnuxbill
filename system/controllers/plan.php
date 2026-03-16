@@ -1122,7 +1122,10 @@ switch ($action) {
         }
         $query = ORM::for_table('tbl_user_recharges')
             ->select_many('tbl_user_recharges.*', 'tbl_transactions.created_at')
-            ->left_outer_join('tbl_transactions', ['tbl_user_recharges.invoice', '=', 'tbl_transactions.invoice'])
+            ->left_outer_join('tbl_transactions', 
+                'tbl_user_recharges.username = tbl_transactions.username AND ' .
+                'tbl_user_recharges.recharged_on = tbl_transactions.recharged_on AND ' .
+                'tbl_user_recharges.recharged_time = tbl_transactions.recharged_time')
             ->order_by_desc('tbl_user_recharges.id');
 
         if ($search != '') {
