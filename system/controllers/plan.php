@@ -324,7 +324,14 @@ switch ($action) {
             _alert(Lang::T('You do not have permission to access this page'), 'danger', "dashboard");
         }
         $id = $routes['2'];
-        $d = ORM::for_table('tbl_user_recharges')->find_one($id);
+        $d = ORM::for_table('tbl_user_recharges')
+            ->select('tbl_user_recharges.*')
+            ->select_expr('(SELECT created_at FROM tbl_transactions 
+                WHERE username = tbl_user_recharges.username 
+                AND recharged_on = tbl_user_recharges.recharged_on 
+                AND recharged_time = tbl_user_recharges.recharged_time 
+                LIMIT 1)', 'transaction_created_at')
+            ->find_one($id);
         if ($d) {
             $ui->assign('d', $d);
             $p = ORM::for_table('tbl_plans')->find_one($d['plan_id']);
