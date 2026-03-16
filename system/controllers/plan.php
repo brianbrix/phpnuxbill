@@ -1121,7 +1121,21 @@ switch ($action) {
             $ui->assign('plans', []);
         }
         $query = ORM::for_table('tbl_user_recharges')
-            ->select_many('tbl_user_recharges.*', 'tbl_transactions.created_at')
+            ->select('tbl_user_recharges.id')
+            ->select('tbl_user_recharges.customer_id')
+            ->select('tbl_user_recharges.username')
+            ->select('tbl_user_recharges.plan_id')
+            ->select('tbl_user_recharges.namebp')
+            ->select('tbl_user_recharges.recharged_on')
+            ->select('tbl_user_recharges.recharged_time')
+            ->select('tbl_user_recharges.expiration')
+            ->select('tbl_user_recharges.time')
+            ->select('tbl_user_recharges.status')
+            ->select('tbl_user_recharges.method')
+            ->select('tbl_user_recharges.routers')
+            ->select('tbl_user_recharges.type')
+            ->select('tbl_user_recharges.admin_id')
+            ->select('tbl_transactions.created_at', 'transaction_created_at')
             ->left_outer_join('tbl_transactions', 
                 'tbl_user_recharges.username = tbl_transactions.username AND ' .
                 'tbl_user_recharges.recharged_on = tbl_transactions.recharged_on AND ' .
