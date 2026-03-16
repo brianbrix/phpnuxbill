@@ -6,22 +6,26 @@ class graph_monthly_sales
     {
         global $CACHE_PATH, $ui;
 
-
         $cacheMSfile = $CACHE_PATH . File::pathFixer('/monthlySales.temp');
         //Cache for 12 hours
         if (file_exists($cacheMSfile) && time() - filemtime($cacheMSfile) < 43200) {
             $monthlySales = json_decode(file_get_contents($cacheMSfile), true);
         } else {
-            // Query to retrieve monthly data
+            // Query to retrieve monthly data - Fixed query
             $results = ORM::for_table('tbl_transactions')
                 ->select_expr('MONTH(recharged_on)', 'month')
                 ->select_expr('SUM(tbl_transactions.price)', 'total')
                 ->where_raw("YEAR(recharged_on) = YEAR(CURRENT_DATE())")
+                ->where_raw('recharged_on IS NOT NULL')
+                ->where_raw('recharged_on != "0000-00-00"')
                 ->where_not_equal('method', 'Customer - Balance')
                 ->where_not_equal('method', 'Recharge Balance - Administrator')
+                ->where_not_equal('method', 'Admin')
                 ->inner_join('tbl_customers', ['tbl_transactions.user_id', '=', 'tbl_customers.id'])
                 ->where('tbl_customers.exclude_from_stats', 0)
+                ->where('tbl_customers.status', 'Active')
                 ->group_by_expr('MONTH(recharged_on)')
+                ->order_by_expr('MONTH(recharged_on)')
                 ->find_many();
 
             // Create an array to hold the monthly sales data
@@ -34,7 +38,7 @@ class graph_monthly_sales
 
                 $monthlySales[$month] = array(
                     'month' => $month,
-                    'totalSales' => $totalSales
+                    'totalSales' => floatval($totalSales)
                 );
             }
 

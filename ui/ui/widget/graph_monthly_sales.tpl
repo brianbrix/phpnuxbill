@@ -17,65 +17,77 @@
 </div>
 
 <script type="text/javascript">
-    {if $_c['hide_tmc'] != 'yes'}
-        {literal}
-            document.addEventListener("DOMContentLoaded", function() {
-                var monthlySales = JSON.parse('{/literal}{$monthlySales|json_encode}{literal}');
+    {literal}
+        document.addEventListener("DOMContentLoaded", function() {
+            var monthlySales = JSON.parse('{/literal}{$monthlySales|json_encode}{literal}');
 
-                var monthNames = [
-                    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-                ];
+            var monthNames = [
+                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            ];
 
-                var labels = [];
-                var data = [];
+            var labels = [];
+            var data = [];
 
-                for (var i = 1; i <= 12; i++) {
-                    var month = findMonthData(monthlySales, i);
-                    labels.push(month ? monthNames[i - 1] : monthNames[i - 1].substring(0, 3));
-                    data.push(month ? month.totalSales : 0);
-                }
+            for (var i = 1; i <= 12; i++) {
+                var month = findMonthData(monthlySales, i);
+                labels.push(month ? monthNames[i - 1] : monthNames[i - 1].substring(0, 3));
+                data.push(month ? month.totalSales : 0);
+            }
 
-                var ctx = document.getElementById('salesChart').getContext('2d');
-                var chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Monthly Sales',
-                            data: data,
-                            backgroundColor: 'rgba(2, 10, 242)', // Customize the background color
-                            borderColor: 'rgba(255, 99, 132, 1)', // Customize the border color
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            x: {
-                                grid: {
-                                    display: false
-                                }
+            var ctx = document.getElementById('salesChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Monthly Sales',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
                             },
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.1)'
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Sales: $' + context.parsed.y.toFixed(2);
                                 }
                             }
                         }
                     }
-                });
-            });
-
-            function findMonthData(monthlySales, month) {
-                for (var i = 0; i < monthlySales.length; i++) {
-                    if (monthlySales[i].month === month) {
-                        return monthlySales[i];
-                    }
                 }
-                return null;
+            });
+        });
+
+        function findMonthData(monthlySales, month) {
+            for (var i = 0; i < monthlySales.length; i++) {
+                if (monthlySales[i].month === month) {
+                    return monthlySales[i];
+                }
             }
-        {/literal}
-    {/if}
+            return null;
+        }
+    {/literal}
 </script>
