@@ -1135,11 +1135,11 @@ switch ($action) {
             ->select('tbl_user_recharges.routers')
             ->select('tbl_user_recharges.type')
             ->select('tbl_user_recharges.admin_id')
-            ->select('tbl_transactions.created_at', 'transaction_created_at')
-            ->left_outer_join('tbl_transactions', 
-                'tbl_user_recharges.username = tbl_transactions.username AND ' .
-                'tbl_user_recharges.recharged_on = tbl_transactions.recharged_on AND ' .
-                'tbl_user_recharges.recharged_time = tbl_transactions.recharged_time')
+            ->select_expr('(SELECT created_at FROM tbl_transactions 
+                WHERE username = tbl_user_recharges.username 
+                AND recharged_on = tbl_user_recharges.recharged_on 
+                AND recharged_time = tbl_user_recharges.recharged_time 
+                LIMIT 1)', 'transaction_created_at')
             ->order_by_desc('tbl_user_recharges.id');
 
         if ($search != '') {
