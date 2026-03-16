@@ -13,6 +13,25 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Test Network Connectivity
+      run: |
+        echo "🌐 Testing network connectivity to server..."
+        nc -zv ${{ secrets.SERVER_HOST }} 22 || echo "❌ Port 22 not reachable"
+        ping -c 3 ${{ secrets.SERVER_HOST }} || echo "❌ Server not reachable"
+        
+    - name: Debug SSH Connection
+      run: |
+        echo "🔍 Debugging SSH connection..."
+        echo "Server: ${{ secrets.SERVER_HOST }}"
+        echo "User: ${{ secrets.SERVER_USER }}"
+        echo "Port: 22"
+        
+        # Test with sshpass (alternative method)
+        sudo apt-get update && sudo apt-get install -y sshpass
+        
+        echo "🔐 Attempting SSH connection with sshpass..."
+        timeout 30 sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'echo "SSH connection successful!"' || echo "SSH connection failed"
+        
     - name: Test SSH Connection
       uses: appleboy/ssh-action@v1.0.0
       with:
