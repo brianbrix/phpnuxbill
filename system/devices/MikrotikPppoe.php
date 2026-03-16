@@ -1,7 +1,7 @@
 <?php
 
 /**
- *  PHP Mikrotik Billing (https://github.com/hotspotbilling/phpnuxbill/)
+ *  BrixNet - PHP Mikrotik Billing (https://github.com/hotspotbilling/brixnet/)
  *  by https://t.me/ibnux
  *
  * This is Core, don't modification except you want to contribute
@@ -17,11 +17,11 @@ class MikrotikPppoe
     {
         return [
             'title' => 'Mikrotik PPPOE',
-            'description' => 'To handle connection between PHPNuxBill with Mikrotik PPPOE',
+            'description' => 'To handle connection between BrixNet with Mikrotik PPPOE',
             'author' => 'ibnux',
             'url' => [
-                'Github' => 'https://github.com/hotspotbilling/phpnuxbill/',
-                'Telegram' => 'https://t.me/phpnuxbill',
+                'Github' => 'https://github.com/brianbrix/brixnet/',
+                'Telegram' => 'https://t.me/brixnet',
                 'Donate' => 'https://paypal.me/ibnux'
             ]
         ];

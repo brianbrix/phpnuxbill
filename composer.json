@@ -1,9 +1,9 @@
 {
-    "name": "hotspotbilling/phpnuxbill",
+    "name": "brianbrix/brixnet",
     "type": "template",
-    "description": "PHPNuxBill a Hotspot Billing Software.",
-    "keywords": ["template","PHPMixBill","PHPnuxBill","Mikrotik","Hotspot","Billing"],
-    "homepage": "https://github.com/hotspotbilling/phpnuxbill",
+    "description": "BrixNet a Hotspot Billing Software.",
+    "keywords": ["template","PHPMixBill","BrixNet","Mikrotik","Hotspot","Billing"],
+    "homepage": "https://github.com/brianbrix/brixnet",
     "license": "MIT",
     "authors": [
         {

@@ -1,7 +1,7 @@
 <?php
 
 /**
- *  PHP Mikrotik Billing (https://github.com/hotspotbilling/phpnuxbill/)
+ *  BrixNet - PHP Mikrotik Billing (https://github.com/hotspotbilling/brixnet/)
  *  by https://t.me/ibnux
  **/
 

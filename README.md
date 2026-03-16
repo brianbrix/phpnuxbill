@@ -1,13 +1,13 @@
 [![ReadMeSupportPalestine](https://raw.githubusercontent.com/Safouene1/support-palestine-banner/master/banner-project.svg)](https://s.id/standwithpalestine)
 
-# PHPNuxBill - PHP Mikrotik Billing
+# BrixNet - PHP Mikrotik Billing
 
-![PHPNuxBill](install/img/logo.png)
+![BrixNet](install/img/logo.png)
 
 ## Feature
 
 - Voucher Generator and Print
-- [Freeradius](https://github.com/hotspotbilling/phpnuxbill/wiki/FreeRadius)
+- [Freeradius](https://github.com/brianbrix/brixnet/wiki/FreeRadius)
 - Self registration
 - User Balance
 - Auto Renewal Package using Balance
@@ -20,7 +20,7 @@
 - Whatsapp Notification to Consumer
 - Telegram Notification for Admin
 
-See [How it Works / Cara Kerja](https://github.com/hotspotbilling/phpnuxbill/wiki/How-It-Works---Cara-kerja)
+See [How it Works / Cara Kerja](https://github.com/brianbrix/brixnet/wiki/How-It-Works---Cara-kerja)
 
 ## Payment Gateway And Plugin
 
@@ -31,7 +31,7 @@ You can download payment gateway and Plugin from Plugin Manager
 
 ## System Requirements
 
-Most current web servers with PHP & MySQL installed will be capable of running PHPNuxBill
+Most current web servers with PHP & MySQL installed will be capable of running BrixNet
 
 Minimum Requirements
 
@@ -54,15 +54,15 @@ The problem with windows is hard to set cronjob, better Linux
 
 ## Installation
 
-[Installation instructions](https://github.com/hotspotbilling/phpnuxbill/wiki)
+[Installation instructions](https://github.com/brianbrix/brixnet/wiki)
 
 ## Freeradius
 
-Support [Freeradius with Database](https://github.com/hotspotbilling/phpnuxbill/wiki/FreeRadius)
+Support [Freeradius with Database](https://github.com/brianbrix/brixnet/wiki/FreeRadius)
 
 ## Community Support
 
-- [Github Discussion](https://github.com/hotspotbilling/phpnuxbill/discussions)
+- [Github Discussion](https://github.com/brianbrix/brixnet/discussions)
 - [Telegram Group](https://t.me/phpmixbill)
 
 ## Technical Support
@@ -75,7 +75,7 @@ Technical Support Start from Rp 500.000 or $50
 If you chat me for any technical support,
 you need to pay,
 
-ask anything for free in the [discussion](/hotspotbilling/phpnuxbill/discussions) page or [Telegram Group](https://t.me/phpnuxbill)
+ask anything for free in the [discussion](/brianbrix/brixnet/discussions) page or [Telegram Group](https://t.me/brixnet)
 
 Contact me at [Telegram](https://t.me/ibnux)
 
@@ -105,6 +105,6 @@ a.n Ibnu Maksum
 ## Thanks
 We appreciate all people who are participating in this project.
 
-<a href="https://github.com/hotspotbilling/phpnuxbill/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=hotspotbilling/phpnuxbill" />
+<a href="https://github.com/brianbrix/brixnet/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=brianbrix/brixnet" />
 </a>

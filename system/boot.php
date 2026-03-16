@@ -1,7 +1,7 @@
 <?php
 
 /**
- * PHP Mikrotik Billing (https://github.com/hotspotbilling/phpnuxbill/)
+ * BrixNet - PHP Mikrotik Billing (https://github.com/brianbrix/brixnet/)
 
  **/
 
@@ -149,7 +149,7 @@ try {
         die();
     }
     $ui->assign("error_message", $e->getMessage() . '<br><pre>' . $e->getTraceAsString() . '</pre>');
-    $ui->assign("error_title", "PHPNuxBill Crash");
+    $ui->assign("error_title", "BrixNet Crash");
     $ui->display('admin/error.tpl');
     die();
 } catch (Exception $e) {
@@ -163,7 +163,7 @@ try {
         die();
     }
     $ui->assign("error_message", $e->getMessage() . '<br><pre>' . $e->getTraceAsString() . '</pre>');
-    $ui->assign("error_title", "PHPNuxBill Crash");
+    $ui->assign("error_title", "BrixNet Crash");
     $ui->display('admin/error.tpl');
     die();
 }

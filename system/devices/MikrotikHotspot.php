@@ -1,7 +1,7 @@
 <?php
 
 /**
- *  PHP Mikrotik Billing (https://github.com/hotspotbilling/phpnuxbill/)
+ *  BrixNet - PHP Mikrotik Billing (https://github.com/brianbrix/brixnet/)
  *  by https://t.me/ibnux
  *
  * This is Core, don't modification except you want to contribute
@@ -18,11 +18,11 @@ class MikrotikHotspot
     {
         return [
             'title' => 'Mikrotik Hotspot',
-            'description' => 'To handle connection between PHPNuxBill with Mikrotik Hotspot',
+            'description' => 'To handle connection between BrixNet with Mikrotik Hotspot',
             'author' => 'ibnux',
             'url' => [
-                'Github' => 'https://github.com/hotspotbilling/phpnuxbill/',
-                'Telegram' => 'https://t.me/phpnuxbill',
+                'Github' => 'https://github.com/brianbrix/brixnet/',
+                'Telegram' => 'https://t.me/brixnet',
                 'Donate' => 'https://paypal.me/ibnux'
             ]
         ];

@@ -10,8 +10,8 @@ class RadiusRest {
             'description' => 'This devices will handle Radius Connection using Rest API',
             'author' => 'ibnu maksum',
             'url' => [
-                'Wiki Tutorial' => 'https://github.com/hotspotbilling/phpnuxbill/wiki/FreeRadius-Rest',
-                'Telegram' => 'https://t.me/phpnuxbill',
+                'Wiki Tutorial' => 'https://github.com/brianbrix/brixnet/wiki/FreeRadius-Rest',
+                'Telegram' => 'https://t.me/brixnet',
                 'Donate' => 'https://paypal.me/ibnux'
             ]
         ];
