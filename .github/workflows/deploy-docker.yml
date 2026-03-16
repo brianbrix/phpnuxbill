@@ -37,7 +37,7 @@ jobs:
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
-        password: ${{ secrets.SERVER_PASSWORD }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
         port: 22
         timeout: 60s
         script: |
@@ -54,7 +54,7 @@ jobs:
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
-        password: ${{ secrets.SERVER_PASSWORD }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
         timeout: 300s
         command_timeout: 60s
         script: |
@@ -129,7 +129,7 @@ jobs:
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
-        password: ${{ secrets.SERVER_PASSWORD }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
         port: ${{ secrets.SERVER_PORT }}
         timeout: 30s
         script: |
