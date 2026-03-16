@@ -1,7 +1,7 @@
 <?php
 
 /**
- *  PHP Mikrotik Billing (https://github.com/hotspotbilling/phpnuxbill/)
+ *  BrixNet - PHP Mikrotik Billing (https://github.com/brianbrix/brixnet)
  *  by https://t.me/ibnux
  **/
 _admin();
@@ -61,28 +61,28 @@ switch ($action) {
             if ($_app_stage == 'Demo') {
                 r2(getUrl('settings/app'), 'e', 'You cannot perform this action in Demo mode');
             }
-            $result = Message::sendWhatsapp(_get('testWa'), 'PHPNuxBill Test Whatsapp');
+            $result = Message::sendWhatsapp(_get('testWa'), 'BrixNet Test Whatsapp');
             r2(getUrl('settings/app'), 's', 'Test Whatsapp has been send<br>Result: ' . $result);
         }
         if (!empty(_get('testSms'))) {
             if ($_app_stage == 'Demo') {
                 r2(getUrl('settings/app'), 'e', 'You cannot perform this action in Demo mode');
             }
-            $result = Message::sendSMS(_get('testSms'), 'PHPNuxBill Test SMS');
+            $result = Message::sendSMS(_get('testSms'), 'BrixNet Test SMS');
             r2(getUrl('settings/app'), 's', 'Test SMS has been send<br>Result: ' . $result);
         }
         if (!empty(_get('testEmail'))) {
             if ($_app_stage == 'Demo') {
                 r2(getUrl('settings/app'), 'e', 'You cannot perform this action in Demo mode');
             }
-            Message::sendEmail(_get('testEmail'), 'PHPNuxBill Test Email', 'PHPNuxBill Test Email Body');
+            Message::sendEmail(_get('testEmail'), 'BrixNet Test Email', 'BrixNet Test Email Body');
             r2(getUrl('settings/app'), 's', 'Test Email has been send');
         }
         if (!empty(_get('testTg'))) {
             if ($_app_stage == 'Demo') {
                 r2(getUrl('settings/app'), 'e', 'You cannot perform this action in Demo mode');
             }
-            $result = Message::sendTelegram('PHPNuxBill Test Telegram');
+            $result = Message::sendTelegram('BrixNet Test Telegram');
             r2(getUrl('settings/app'), 's', 'Test Telegram has been send<br>Result: ' . $result);
         }
 
@@ -123,10 +123,23 @@ switch ($action) {
         $ui->assign('favicon', $favicon);
 
         $themes = [];
-        $files = scandir('ui/themes/');
-        foreach ($files as $file) {
-            if (is_dir('ui/themes/' . $file) && !in_array($file, ['.', '..'])) {
-                $themes[] = $file;
+        // Add predefined BrixNet themes
+        $themes = [
+            'default' => 'Default',
+            'modern_blue' => 'Modern Blue',
+            'dark_mode' => 'Dark Mode', 
+            'green_nature' => 'Green Nature',
+            'sunset_orange' => 'Sunset Orange',
+            'royal_purple' => 'Royal Purple'
+        ];
+        
+        // Also check for custom themes in ui/themes directory
+        if (is_dir('ui/themes/')) {
+            $files = scandir('ui/themes/');
+            foreach ($files as $file) {
+                if (is_dir('ui/themes/' . $file) && !in_array($file, ['.', '..']) && !isset($themes[$file])) {
+                    $themes[$file] = ucwords(str_replace('_', ' ', $file));
+                }
             }
         }
 

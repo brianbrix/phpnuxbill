@@ -247,7 +247,7 @@ $style
 $html
 EOF;
             $mpdf->WriteHTML($nhtml);
-            $mpdf->Output('phpnuxbill_reports_'.date('Ymd_His') . '.pdf', 'D');
+            $mpdf->Output('brixnet_reports_'.date('Ymd_His') . '.pdf', 'D');
         } else {
             echo 'No Data';
         }

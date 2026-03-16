@@ -1,0 +1,159 @@
+/*
+ * BrixNet Theme - Sunset Orange
+ * Warm orange theme for BrixNet
+ */
+
+:root {
+    --primary-color: #ea580c;
+    --primary-dark: #c2410c;
+    --primary-light: #f97316;
+    --secondary-color: #6b7280;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #06b6d4;
+    --light-color: #fff7ed;
+    --dark-color: #7c2d12;
+    --sidebar-bg: #7c2d12;
+    --sidebar-text: #fed7aa;
+    --header-bg: #c2410c;
+    --card-bg: #ffffff;
+    --text-primary: #7c2d12;
+    --text-secondary: #6b7280;
+    --border-color: #fed7aa;
+    --hover-bg: #fff7ed;
+}
+
+body {
+    background-color: var(--light-color);
+    color: var(--text-primary);
+}
+
+.main-header {
+    background-color: var(--header-bg) !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.main-header .navbar {
+    background-color: var(--header-bg) !important;
+}
+
+.logo {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.main-sidebar {
+    background-color: var(--sidebar-bg) !important;
+}
+
+.sidebar-menu > li > a {
+    color: var(--sidebar-text) !important;
+}
+
+.sidebar-menu > li > a:hover {
+    background-color: var(--primary-light) !important;
+    color: white !important;
+}
+
+.sidebar-menu > li.active > a {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.content-wrapper {
+    background-color: var(--light-color);
+}
+
+.box {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.box-header {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+.btn-success {
+    background-color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+}
+
+.btn-warning {
+    background-color: var(--warning-color) !important;
+    border-color: var(--warning-color) !important;
+}
+
+.btn-danger {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+}
+
+.panel {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.panel-heading {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-color: var(--primary-color) !important;
+}
+
+.table {
+    background-color: var(--card-bg) !important;
+}
+
+.table > thead > tr > th {
+    background-color: var(--light-color) !important;
+    border-bottom: 2px solid var(--primary-color) !important;
+}
+
+.table-hover > tbody > tr:hover {
+    background-color: var(--hover-bg) !important;
+}
+
+.form-control {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(234, 88, 12, 0.25) !important;
+}
+
+.nav-tabs > li.active > a {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.nav-tabs > li > a:hover {
+    border-color: var(--primary-color) !important;
+}
+
+.label-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}

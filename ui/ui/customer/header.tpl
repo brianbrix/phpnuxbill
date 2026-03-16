@@ -18,6 +18,10 @@
     <link rel="stylesheet" href="{$app_url}/ui/ui/styles/sweetalert2.min.css" />
     <script src="{$app_url}/ui/ui/scripts/sweetalert2.all.min.js"></script>
     <link rel="stylesheet" href="{$app_url}/ui/ui/styles/phpnuxbill.customer.css?2025.2.4" />
+    
+    {if !empty($_c['theme']) && $_c['theme'] neq 'default'}
+        <link rel="stylesheet" href="{$app_url}/ui/ui/styles/theme-{$_c['theme']}.css?2025.2.4" />
+    {/if}
 
     <style>
 
@@ -33,7 +37,7 @@
     <div class="wrapper">
         <header class="main-header" style="position:fixed; width: 100%">
             <a href="{Text::url('home')}" class="logo">
-                <span class="logo-mini"><b>N</b>uX</span>
+                <span class="logo-mini"><b>B</b>N</span>
                 <span class="logo-lg">{$_c['CompanyName']}</span>
             </a>
             <nav class="navbar navbar-static-top">

@@ -22,6 +22,10 @@
     <link rel="stylesheet" href="{$app_url}/ui/ui/summernote/summernote.min.css" />
     <link rel="stylesheet" href="{$app_url}/ui/ui/styles/phpnuxbill.css?2025.2.4" />
     <link rel="stylesheet" href="{$app_url}/ui/ui/styles/7.css" />
+    
+    {if !empty($_c['theme']) && $_c['theme'] neq 'default'}
+        <link rel="stylesheet" href="{$app_url}/ui/ui/styles/theme-{$_c['theme']}.css?2025.2.4" />
+    {/if}
 
     <script src="{$app_url}/ui/ui/scripts/sweetalert2.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
@@ -38,7 +42,7 @@
     <div class="wrapper">
         <header class="main-header">
             <a href="{Text::url('dashboard')}" class="logo">
-                <span class="logo-mini"><b>N</b>uX</span>
+                <span class="logo-mini"><b>B</b>N</span>
                 <span class="logo-lg">{$_c['CompanyName']}</span>
             </a>
             <nav class="navbar navbar-static-top">

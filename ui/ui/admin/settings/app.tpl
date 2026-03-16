@@ -83,16 +83,13 @@
                     <label class="col-md-3 control-label">{Lang::T('Theme')}</label>
                     <div class="col-md-5">
                         <select name="theme" id="theme" class="form-control">
-                            <option value="default" {if $_c['theme'] eq 'default' }selected="selected" {/if}>
-                                {Lang::T('Default')}
-                            </option>
-                            {foreach $themes as $theme}
-                                <option value="{$theme}" {if $_c['theme'] eq $theme}selected="selected" {/if}>
-                                    {Lang::ucWords($theme)}</option>
+                            {foreach $themes as $theme_value => $theme_name}
+                                <option value="{$theme_value}" {if $_c['theme'] eq $theme_value}selected="selected" {/if}>
+                                    {$theme_name}</option>
                             {/foreach}
                         </select>
                     </div>
-                    <p class="help-block col-md-4"><a href="https://github.com/hotspotbilling/phpnuxbill/wiki/Themes"
+                    <p class="help-block col-md-4"><a href="https://github.com/brianbrix/brixnet/wiki/Themes"
                             target="_blank">{Lang::T('Theme Info')}</a></p>
                 </div>
                 <div class="form-group">

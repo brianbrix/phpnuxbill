@@ -168,7 +168,7 @@ class Message
 
             if (!file_exists($PAGES_PATH . DIRECTORY_SEPARATOR . 'Email.html')) {
                 if (!copy($PAGES_PATH . '_template' . DIRECTORY_SEPARATOR . 'Email.html', $PAGES_PATH . DIRECTORY_SEPARATOR . 'Email.html')) {
-                    file_put_contents($PAGES_PATH . DIRECTORY_SEPARATOR . 'Email.html', Http::getData('https://raw.githubusercontent.com/hotspotbilling/phpnuxbill/master/pages_template/Email.html'));
+                    file_put_contents($PAGES_PATH . DIRECTORY_SEPARATOR . 'Email.html', Http::getData('https://raw.githubusercontent.com/brianbrix/brixnet/master/pages_template/Email.html'));
                 }
             }
 
