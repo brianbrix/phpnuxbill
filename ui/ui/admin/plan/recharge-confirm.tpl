@@ -62,7 +62,7 @@
                         </li>
                         <li class="list-group-item">
                             <b>{Lang::T('Start Date & Time')}</b> <span class="pull-right">
-                                {if $start_date && $start_time}
+                                {if !empty($start_date) && !empty($start_time)}
                                     {Lang::dateAndTimeFormat($start_date, $start_time)}
                                 {else}
                                     {Lang::T('Immediately')}
@@ -192,8 +192,8 @@
                     <input type="hidden" name="plan" value="{$plan['id']}">
                     <input type="hidden" name="server" value="{$server}">
                     <input type="hidden" name="quantity" value="{if $quantity}{$quantity}{else}1{/if}">
-                    <input type="hidden" name="start_date" value="{if $start_date}{$start_date}{/if}">
-                    <input type="hidden" name="start_time" value="{if $start_time}{$start_time}{/if}">
+                    <input type="hidden" name="start_date" value="{if !empty($start_date)}{$start_date}{/if}">
+                    <input type="hidden" name="start_time" value="{if !empty($start_time)}{$start_time}{/if}">
                     <input type="hidden" name="stoken" value="{App::getToken()}">
                     <center>
                         <button class="btn btn-success" type="submit">{Lang::T('Recharge')}</button><br>
