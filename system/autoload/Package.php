@@ -199,15 +199,15 @@ class Package
             $date_exp = $exp_date->format('Y-m-d');
             $time = "23:59:59";
         } else if ($p['validity_unit'] == 'Days') {
-            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime('+' . ($p['validity'] * $quantity) . ' day')));
+            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime($date_only . ' ' . $time_only . ' +' . ($p['validity'] * $quantity) . ' day')));
             $date_exp = $datetime[0];
             $time = $datetime[1];
         } else if ($p['validity_unit'] == 'Hrs') {
-            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime('+' . ($p['validity'] * $quantity) . ' hour')));
+            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime($date_only . ' ' . $time_only . ' +' . ($p['validity'] * $quantity) . ' hour')));
             $date_exp = $datetime[0];
             $time = $datetime[1];
         } else if ($p['validity_unit'] == 'Mins') {
-            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime('+' . ($p['validity'] * $quantity) . ' minute')));
+            $datetime = explode(' ', date("Y-m-d H:i:s", strtotime($date_only . ' ' . $time_only . ' +' . ($p['validity'] * $quantity) . ' minute')));
             $date_exp = $datetime[0];
             $time = $datetime[1];
         }

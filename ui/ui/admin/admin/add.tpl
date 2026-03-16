@@ -51,7 +51,7 @@
                                 {if $_admin['user_type'] eq 'Agent'}
                                     <option value="Sales">{Lang::T('Sales')}</option>
                                 {/if}
-                                {if $_admin['user_type'] eq 'Admin' || $_admin['user_type'] eq 'SuperAdmin'}
+                                {if $_admin['user_type'] eq 'Admin'}
                                     <option value="Report">{Lang::T('Report Viewer')}</option>
                                     <option value="Agent">{Lang::T('Agent')}</option>
                                     <option value="Sales">{Lang::T('Sales')}</option>
@@ -59,6 +59,9 @@
                                 {if $_admin['user_type'] eq 'SuperAdmin'}
                                     <option value="Admin">{Lang::T('Administrator')}</option>
                                     <option value="SuperAdmin">{Lang::T('Super Administrator')}</option>
+                                    <option value="Report">{Lang::T('Report Viewer')}</option>
+                                    <option value="Agent">{Lang::T('Agent')}</option>
+                                    <option value="Sales">{Lang::T('Sales')}</option>
                                 {/if}
                             </select>
                         </div>

@@ -580,6 +580,14 @@ switch ($action) {
         if (!in_array($admin['user_type'], ['SuperAdmin', 'Admin', 'Agent'])) {
             _alert(Lang::T('You do not have permission to access this page'), 'danger', "dashboard");
         }
+        
+        // Security check: Admin users cannot create other Admin or SuperAdmin users
+        // They can only create Agent and Sales users
+        if ($admin['user_type'] == 'Admin') {
+            // Allow Admin to create Agent and Sales users only
+            // This will be enforced in the template as well
+        }
+        
         $csrf_token = Csrf::generateAndStoreToken();
         $ui->assign('csrf_token', $csrf_token);
         $ui->assign('_title', Lang::T('Add User'));
@@ -700,6 +708,7 @@ switch ($action) {
         if (!in_array($admin['user_type'], ['SuperAdmin', 'Admin', 'Agent'])) {
             _alert(Lang::T('You do not have permission to access this page'), 'danger', "dashboard");
         }
+        
         if ($_app_stage == 'Demo') {
             r2(getUrl('settings/users-add'), 'e', 'You cannot perform this action in Demo mode');
         }
@@ -718,6 +727,17 @@ switch ($action) {
         $ward = _post('ward');
         $send_notif = _post('send_notif');
         $root = _post('root');
+        
+        // Security check: Admin users can only create Agent and Sales users
+        if ($admin['user_type'] == 'Admin' && in_array($user_type, ['Admin', 'SuperAdmin'])) {
+            r2(getUrl('settings/users-add'), 'e', Lang::T('You do not have permission to create admin users'));
+        }
+        
+        // Security check: Agent users can only create Sales users
+        if ($admin['user_type'] == 'Agent' && !in_array($user_type, ['Sales'])) {
+            r2(getUrl('settings/users-add'), 'e', Lang::T('You do not have permission to create this type of user'));
+        }
+        
         $msg = '';
         if (Validator::Length($username, 45, 2) == false) {
             $msg .= Lang::T('Username should be between 3 to 45 characters') . '<br>';

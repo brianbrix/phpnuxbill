@@ -180,6 +180,10 @@
                     {if $in['type'] != 'Balance'}
                         <tr>
                             <th>{Lang::pad(Lang::T('Created On'), ' ', 2)}</th>
+                            <td>{Lang::dateAndTimeFormat(date('Y-m-d', strtotime($in['created_at'])), date('H:i', strtotime($in['created_at'])))}</td>
+                        </tr>
+                        <tr>
+                            <th>{Lang::pad(Lang::T('Starts On'), ' ', 2)}</th>
                             <td>{Lang::dateAndTimeFormat($in['recharged_on'], $in['recharged_time'])}</td>
                         </tr>
                         <tr>
